@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Portfolio Manager</title>
+    <meta content='width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no' name='viewport'>
+    <!-- Bootstrap 3.3.2 -->
+    <link href="/static/bootstrap/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+    <!-- Font Awesome Icons -->
+    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css" />
+
+    <link href="https://unpkg.com/tailwindcss@1.9.6/dist/tailwind.min.css" rel="stylesheet">
+    
+    <!-- Theme style -->
+    <link href="/static/dist/css/AdminLTE.min.css" rel="stylesheet" type="text/css" />
+    <!-- AdminLTE Skins. Choose a skin from the css/skins 
+         folder instead of downloading all of them to reduce the load. -->
+    <link href="/static/dist/css/skins/_all-skins.min.css" rel="stylesheet" type="text/css" />
+
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <script src="https://cdn.datatables.net/1.13.5/js/jquery.dataTables.min.js"></script> <!-- DataTables JS 추가 -->
+        <script src="https://cdn.jsdelivr.net/npm/markdown-it/dist/markdown-it.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.0.10/dist/umd/popper.min.js"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/markdown-it/12.3.2/markdown-it.min.js"></script>
+        <script src="/static/js/basic.js" type="text/javascript"></script>
+    
+  </head>
+  <body class="skin-blue">
+    <div class="wrapper">
+      
+      <header class="main-header">
+        <!-- Logo -->
+        <a href="/" class="logo"><b>Admin</b>Portfolio</a>
+        <!-- Header Navbar: style can be found in header.less -->
+        <nav class="navbar navbar-static-top" role="navigation">
+          <!-- Sidebar toggle button-->
+          <a href="#" class="sidebar-toggle" data-toggle="offcanvas" role="button">
+            <span class="sr-only">Toggle navigation</span>
+          </a>
+          <!-- Navbar Right Menu -->
+          <div class="navbar-custom-menu">
+            <ul class="nav navbar-nav">
+              <li class="dropdown messages-menu">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                  <i class="fa fa-envelope-o"></i>
+                  <span class="label label-success">2</span>
+                </a>
+                <ul class="dropdown-menu">
+                  <li class="header">You have 2 messages</li>
+                  <li>
+                    <!-- inner menu: contains the actual data -->
+                    <ul class="menu">
+                      <li><!-- start message -->
+                        <a href="#">
+                          <div class="pull-left">
+                            <img src="/static/dist/img/user2-160x160.jpg" class="img-circle" alt="User Image"/>
+                          </div>
+                          <h4>
+                            Support Team
+                            <small><i class="fa fa-clock-o"></i> 5 mins</small>
+                          </h4>
+                          <p>Why not buy a new awesome theme?</p>
+                        </a>
+                      </li>
+                      <li>
+                        <a href="#">
+                          <div class="pull-left">
+                            <img src="/static/dist/img/user4-128x128.jpg" class="img-circle" alt="user image"/>
+                          </div>
+                          <h4>
+                            Reviewers
+                            <small><i class="fa fa-clock-o"></i> 2 days</small>
+                          </h4>
+                          <p>Why not buy a new awesome theme?</p>
+                        </a>
+                      </li>
+                    </ul>
+                  </li>
+                  <li class="footer"><a href="#">See All Messages</a></li>
+                </ul>
+              </li>
+              <!-- Notifications: style can be found in dropdown.less -->
+              <li class="dropdown notifications-menu">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                  <i class="fa fa-bell-o"></i>
+                  <span class="label label-warning">2</span>
+                </a>
+                <ul class="dropdown-menu">
+                  <li class="header">You have 2 notifications</li>
+                  <li>
+                    <!-- inner menu: contains the actual data -->
+                    <ul class="menu">
+                      <li>
+                        <a href="#">
+                          <i class="fa fa-users text-aqua"></i> 5 new members joined today
+                        </a>
+                      </li>
+                      <li>
+                        <a href="#">
+                          <i class="fa fa-warning text-yellow"></i> Very long description here that may not fit into the page and may cause design problems
+                        </a>
+                      </li>
+                    </ul>
+                  </li>
+                  <li class="footer"><a href="#">View all</a></li>
+                </ul>
+              </li>
+
+              <!-- User Account: style can be found in dropdown.less -->
+              <li class="dropdown user user-menu">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                  <img src="/static/dist/img/user2-160x160.jpg" class="user-image" alt="User Image"/>
+                  <span class="hidden-xs" id='profilename1'>Francis Han</span>
+                </a>
+                <ul class="dropdown-menu">
+                  <!-- User image -->
+                  <li class="user-header">
+                    <img src="/static/dist/img/user2-160x160.jpg" class="img-circle" alt="User Image" />
+                    <p>
+                        <span id='profilename2'>Francis Han</span> - <span id="profilerole"></span>
+                      <small>Member since <span id="profiledate"></span></small>
+                    </p>
+                  </li>
+                  <!-- Menu Body -->
+
+                  <!-- Menu Footer-->
+                  <li class="user-footer">
+                    <div class="pull-left">
+                        <a href="#" class="btn btn-default btn-flat" id="myProfileBtn">Profile</a>
+                    </div>
+                    <div class="pull-right">
+                        <a href="#" class="btn btn-default btn-flat" id="signOutBtn">Sign out</a>
+                    </div>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+          </div>
+        </nav>
+      </header>
+      <!-- Left side column. contains the logo and sidebar -->
+      <aside class="main-sidebar">
+        <!-- sidebar: style can be found in sidebar.less -->
+        <section class="sidebar">
+          <!-- Sidebar user panel -->
+          <div class="user-panel">
+            <div class="pull-left image">
+              <img src="/static/dist/img/user2-160x160.jpg" class="img-circle" alt="User Image" />
+            </div>
+            <div class="pull-left info">
+              <p id='profilename3'></p>
+              <a href="#"><i class="fa fa-circle text-success"></i> Online</a>
+            </div>
+          </div>
+          <!-- search form -->
+          <form action="#" method="get" class="sidebar-form">
+            <div class="input-group">
+              <input type="text" name="q" class="form-control" placeholder="Search..."/>
+              <span class="input-group-btn">
+                <button type='submit' name='search' id='search-btn' class="btn btn-flat"><i class="fa fa-search"></i></button>
+              </span>
+            </div>
+          </form>
+          <!-- /.search form -->
+          <!-- sidebar menu: : style can be found in sidebar.less -->
+          <ul class="sidebar-menu">
+            <li class="header">MAIN</li>
+            <li>
+              <a href="/transactions">
+                <i class="fa fa-book"></i> <span>Transactions</span> 
+              </a>
+            </li>
+            <li>
+              <a href="/companies">
+                <i class="fa fa-building"></i> <span>Companies</span> 
+              </a>
+            </li>
+            <li>
+              <a href="/funds">
+                <i class="fa fa-money"></i> <span>Funds</span> 
+              </a>
+            </li>
+            <li>
+            <a href="/users">
+                <i class="fa fa-users"></i> <span>Users</span> 
+            </a>
+            </li>
+
+            <li class="header">Additional</li>
+            <li><a href="/securities"><i class="fa fa-circle-o text-danger"></i> Securities</a></li>
+            <li><a href="/authTable"><i class="fa fa-circle-o text-warning"></i> Auth Table</a></li>
+            <li class="active"><a href="/advSearch"><i class="fa fa-circle-o text-info"></i> Advanced Search</a></li>
+          </ul>
+        </section>
+        <!-- /.sidebar -->
+      </aside>
+
+      <div class="content-wrapper p-2 bg-gray-100">
+        <section class="content-header">
+          <h1 style="display: inline-block;">Advanced Search</h1>
+          <ol class="breadcrumb">
+            <li><a href="/"><i class="fa fa-dashboard"></i> Home</a></li>
+            <li class="active">Advanced Search</li>
+          </ol>
+        </section>
+        <section class="content">
+          <div id="resultsContent" class="mt-2 p-4 border border-white-300 rounded-lg" style="height:500px">
+            <!-- 대화 결과 내용이 여기에 표시됩니다. -->
+          </div>
+        </section>
+      </div>
+
+      <footer class="main-footer">
+        <div class="flex flex-row items-center h-16 rounded-xl bg-white w-full px-4">
+          <div>
+            <input type="file" id="fileInput" accept=".pdf" style="display:none;">
+            <button class="flex items-center justify-center text-gray-400 hover:text-gray-600"
+              id="filefindButton" 
+            >
+
+              <svg
+                class="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"
+                ></path>
+              </svg>
+            </button>
+          </div>
+          <div class="flex-grow ml-4">
+            <div class="relative w-full">
+              <input
+                type="text"
+                class="flex w-full border rounded-xl focus:outline-none focus:border-indigo-300 pl-4 h-10"
+                id="searchQuery"
+              />
+              <button id="websearchBtn" class="absolute flex items-center justify-center h-full w-12 right-0 top-0 text-gray-400 hover:text-gray-600">
+                <span id="websearchIcon">🌐</span>
+              </button>
+            </div>
+          </div>
+          <div class="ml-4">
+            <button class="flex items-center justify-center bg-indigo-500 hover:bg-indigo-600 rounded-xl text-white px-4 py-1 flex-shrink-0" id="searchButton">
+              <span>Send</span>
+              <span class="ml-2">
+                <svg
+                  class="w-4 h-4 transform rotate-45 -mt-px"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
+                  ></path>
+                </svg>
+              </span>
+            </button>
+          </div>
+        </div>
+      </footer>
+
+    </div>
+ 
+    <script src="/static/bootstrap/js/bootstrap.min.js" type="text/javascript"></script>
+
+    <script src="/static/dist/js/app.min.js" type="text/javascript"></script>
+
+    <script type="text/javascript">
+        $(document).ready(function() {
+          // 서버에 로그인 상태를 확인하는 요청을 보냅니다.
+          $.ajax({
+            url: '/checkLoginStatus',  // 로그인 상태를 확인하는 엔드포인트
+            method: 'GET',
+            success: function(response) {
+              if (response.status !== 'logged_in') {
+                // 로그인되지 않은 경우 signin.html로 리다이렉트
+                window.location.href = "/signin";
+              }
+            },
+            error: function() {
+              // 오류가 발생한 경우에도 signin.html로 리다이렉트
+              window.location.href = "/signin";
+            }
+          });
+        });
+      </script>
+  </body>
+</html>

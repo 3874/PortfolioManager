@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Portfolio Manager</title>
+    <meta content='width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no' name='viewport'>
+    <!-- Bootstrap 3.3.2 -->
+    <link href="/static/bootstrap/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+    <!-- Font Awesome Icons -->
+    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css" />
+    <!-- Ionicons -->
+    <link href="http://code.ionicframework.com/ionicons/2.0.0/css/ionicons.min.css" rel="stylesheet" type="text/css" />
+    <!-- DATA TABLES -->
+    <link href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css" rel="stylesheet" type="text/css" />
+    <!-- Theme style -->
+    <link href="/static/dist/css/AdminLTE.min.css" rel="stylesheet" type="text/css" />
+    <!-- AdminLTE Skins. Choose a skin from the css/skins 
+         folder instead of downloading all of them to reduce the load. -->
+    <link href="/static/dist/css/skins/_all-skins.min.css" rel="stylesheet" type="text/css" />
+
+
+    <style>
+      .example-modal .modal {
+        position: relative;
+        top: auto;
+        bottom: auto;
+        right: auto;
+        left: auto;
+        display: block;
+        z-index: 1;
+      }
+      .example-modal .modal {
+        background: transparent!important;
+      }
+      .label-width {
+        width: 80px; /* 원하는 너비로 조정 */
+        display: inline-block; /* 레이블을 블록으로 설정하여 너비 적용 */
+      }
+    </style>
+  </head>
+  <body class="skin-blue">
+    <div class="wrapper">
+      
+      <header class="main-header">
+        <a href="/" class="logo"><b>Admin</b>Portfolio</a>
+        <!-- Header Navbar: style can be found in header.less -->
+        <nav class="navbar navbar-static-top" role="navigation">
+          <!-- Sidebar toggle button-->
+          <a href="#" class="sidebar-toggle" data-toggle="offcanvas" role="button">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </a>
+          <div class="navbar-custom-menu">
+            <ul class="nav navbar-nav">
+              <!-- Messages: style can be found in dropdown.less-->
+              <li class="dropdown messages-menu">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                  <i class="fa fa-envelope-o"></i>
+                  <span class="label label-success">2</span>
+                </a>
+                <ul class="dropdown-menu">
+                  <li class="header">You have 2 messages</li>
+                  <li>
+                    <!-- inner menu: contains the actual data -->
+                    <ul class="menu">
+                      <li><!-- start message -->
+                        <a href="#">
+                          <div class="pull-left">
+                            <img src="/static/dist/img/user2-160x160.jpg" class="img-circle" alt="User Image"/>
+                          </div>
+                          <h4>
+                            Support Team
+                            <small><i class="fa fa-clock-o"></i> 5 mins</small>
+                          </h4>
+                          <p>Why not buy a new awesome theme?</p>
+                        </a>
+                      </li>
+                      <li>
+                        <a href="#">
+                          <div class="pull-left">
+                            <img src="/static/dist/img/user4-128x128.jpg" class="img-circle" alt="user image"/>
+                          </div>
+                          <h4>
+                            Reviewers
+                            <small><i class="fa fa-clock-o"></i> 2 days</small>
+                          </h4>
+                          <p>Why not buy a new awesome theme?</p>
+                        </a>
+                      </li>
+                    </ul>
+                  </li>
+                  <li class="footer"><a href="#">See All Messages</a></li>
+                </ul>
+              </li>
+              <!-- Notifications: style can be found in dropdown.less -->
+              <li class="dropdown notifications-menu">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                  <i class="fa fa-bell-o"></i>
+                  <span class="label label-warning">2</span>
+                </a>
+                <ul class="dropdown-menu">
+                  <li class="header">You have 2 notifications</li>
+                  <li>
+                    <!-- inner menu: contains the actual data -->
+                    <ul class="menu">
+                      <li>
+                        <a href="#">
+                          <i class="fa fa-users text-aqua"></i> 5 new members joined today
+                        </a>
+                      </li>
+                      <li>
+                        <a href="#">
+                          <i class="fa fa-warning text-yellow"></i> Very long description here that may not fit into the page and may cause design problems
+                        </a>
+                      </li>
+                    </ul>
+                  </li>
+                  <li class="footer"><a href="#">View all</a></li>
+                </ul>
+              </li>
+
+              <!-- User Account: style can be found in dropdown.less -->
+              <li class="dropdown user user-menu">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                  <img src="/static/dist/img/user2-160x160.jpg" class="user-image" alt="User Image"/>
+                  <span class="hidden-xs">Francis Han</span>
+                </a>
+                <ul class="dropdown-menu">
+                  <!-- User image -->
+                  <li class="user-header">
+                    <img src="/static/dist/img/user2-160x160.jpg" class="img-circle" alt="User Image" />
+                    <p>
+                      Francis Han - CEO
+                      <small>Member since Nov. 2012</small>
+                    </p>
+                  </li>
+                  <!-- Menu Body -->
+
+                  <!-- Menu Footer-->
+                  <li class="user-footer">
+                    <div class="pull-left">
+                      <a href="#" class="btn btn-default btn-flat" id="myProfileBtn">Profile</a>
+                    </div>
+                    <div class="pull-right">
+                        <a href="#" class="btn btn-default btn-flat" id="signOutBtn">Sign out</a>
+                    </div>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+          </div>
+        </nav>
+      </header>
+      <!-- Left side column. contains the logo and sidebar -->
+      <aside class="main-sidebar">
+        <!-- sidebar: style can be found in sidebar.less -->
+        <section class="sidebar">
+          <!-- Sidebar user panel -->
+          <div class="user-panel">
+            <div class="pull-left image">
+              <img src="/static/dist/img/user2-160x160.jpg" class="img-circle" alt="User Image" />
+            </div>
+            <div class="pull-left info">
+              <p>Francis Han</p>
+
+              <a href="#"><i class="fa fa-circle text-success"></i> Online</a>
+            </div>
+          </div>
+          <!-- search form -->
+          <form action="#" method="get" class="sidebar-form">
+            <div class="input-group">
+              <input type="text" name="q" class="form-control" placeholder="Search..."/>
+              <span class="input-group-btn">
+                <button type='submit' name='seach' id='search-btn' class="btn btn-flat"><i class="fa fa-search"></i></button>
+              </span>
+            </div>
+          </form>
+          <!-- /.search form -->
+          <!-- sidebar menu: : style can be found in sidebar.less -->
+          <ul class="sidebar-menu">
+            <li class="header">MAIN</li>
+            <li class="active">
+              <a href="/transactions">
+                <i class="fa fa-book"></i> <span>Transactions</span> 
+              </a>
+            </li>
+            <li>
+              <a href="/companies">
+                <i class="fa fa-building"></i> <span>Companies</span> 
+              </a>
+            </li>
+            <li>
+              <a href="/funds">
+                <i class="fa fa-money"></i> <span>Funds</span> 
+              </a>
+            </li>
+            <li>
+              <a href="/users">
+                <i class="fa fa-users"></i> <span>Users</span> 
+              </a>
+            </li>
+
+
+            <li class="header">Additional</li>
+            <li><a href="/securities"><i class="fa fa-circle-o text-danger"></i> Securities</a></li>
+            <li><a href="/authTable"><i class="fa fa-circle-o text-warning"></i> Auth Table</a></li>
+            <li><a href="/advSearch"><i class="fa fa-circle-o text-info"></i> Advanced Search</a></li>
+          </ul>
+        </section>
+        <!-- /.sidebar -->
+      </aside>
+
+      <!-- Right side column. Contains the navbar and content of the page -->
+      <div class="content-wrapper">
+        <!-- Content Header (Page header) -->
+        <section class="content-header">
+          <h1 style="display: inline-block;">Transactions</h1>
+          <small><a href="/transaction_add" class="btn btn-warning btn-sm" style="margin-left: 20px; display: inline-block;">Add</a></small>
+          <ol class="breadcrumb">
+            <li><a href="/"><i class="fa fa-dashboard"></i> Home</a></li>
+            <li class="active">Transactions</li>
+          </ol>
+        </section>
+
+        <!-- Main content -->
+        <section class="content">
+          <div class="row">
+            <div class="col-xs-12">
+              <div class="box">
+                <div class="box-header">
+                  <h3 class="box-title">Data Table</h3>
+                </div><!-- /.box-header -->
+                <div class="box-body">
+                  <table id="transactionsTable" class="table table-bordered table-hover">
+                    <thead>
+                      <tr>
+                        <th>Transac. ID</th>
+                        <th>Target ID</th>
+                        <th>Target</th>
+                        <th>Type</th>
+                        <th>Security</th>
+                        <th>Currency</th>
+                        <th>Unit</th>
+                        <th>Pre. Value</th>
+                        <th>Amount</th>
+                        <th>Date</th>
+                      </tr>
+                    </thead>
+
+                  </table>
+                </div><!-- /.box-body -->
+              </div><!-- /.box -->
+
+            </div><!-- /.col -->
+          </div><!-- /.row -->
+        </section><!-- /.content -->
+      </div><!-- /.content-wrapper -->
+      <footer class="main-footer">
+        <strong>Copyright &copy; 2025 Ylem Invest.</strong> All rights reserved.
+      </footer>
+    </div><!-- ./wrapper -->
+
+    <!-- jQuery 2.1.3 -->
+    <script src="/static/plugins/jQuery/jQuery-2.1.3.min.js"></script>
+    <!-- Bootstrap 3.3.2 JS -->
+    <script src="/static/bootstrap/js/bootstrap.min.js" type="text/javascript"></script>
+    <!-- DATA TABES SCRIPT -->
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js" type="text/javascript"></script>
+    <script src="/static/plugins/datatables/dataTables.bootstrap.js" type="text/javascript"></script>
+    <!-- SlimScroll -->
+    <script src="/static/plugins/slimScroll/jquery.slimscroll.min.js" type="text/javascript"></script>
+    <!-- FastClick -->
+    <script src='/static/plugins/fastclick/fastclick.min.js'></script>
+    <!-- AdminLTE App -->
+    <script src="/static/dist/js/app.min.js" type="text/javascript"></script>
+    <!-- AdminLTE for demo purposes -->
+    <script src="/static/dist/js/demo.js" type="text/javascript"></script>
+    <script src="/static/js/basic.js" type="text/javascript"></script>
+    <!-- page script -->
+
+<script>
+  $(document).ready(function() {
+      // DataTable 초기화
+      const table = $('#transactionsTable').DataTable({
+        ajax: {
+            url: '/getTransactions',
+            error: function(xhr, error, code) {
+                window.location.href = '/';
+            }
+        },
+        columns: [
+            { data: '_id', visible: false },
+            { data: 'target_id', visible: false },
+            { data: 'target'},
+            { data: 'trs_type' },
+            { data: 'security_type' },
+            { data: 'currency' },
+            { data: 'unit' },
+            { data: 'prevalue', 
+              render: function(data, type, row) {
+                    return data.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+                }
+            },
+            { data: 'amount',
+              render: function(data, type, row) {
+                  return data.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+              }
+            },
+            { data: 'trs_date', visible: false  },
+            { data: 'fund_id', visible: false }
+        ],
+        pageLength: 50
+      });
+
+      // View 버튼 클릭 시 모달 표시
+      $('#transactionsTable tbody').on('click', 'tr', function() {
+          const data = table.row(this).data();
+          const transactionId = data._id;
+
+          // transactionId로 /getTransaction API 호출
+          $.ajax({
+              url: `/getTransaction/${transactionId}`,
+              method: 'GET',
+              success: function(response) {
+                  // API 응답 데이터를 사용하여 모달에 세부 정보 표시
+                  console.log(response);
+                  localStorage.setItem('transactionData', JSON.stringify(response.data)); // 데이터 저장
+                  window.location.href ='/transaction'; 
+              },
+              error: function() {
+                  alert('Failed to load transaction details');
+              }
+          });
+      });
+      // 모달 닫기
+      $('#closeModalBtn').on('click', function() {
+          $('#transactionModal').modal('hide');
+      });
+
+      // Transaction 삭제
+      $('#deleteTransactionBtn').on('click', function() {
+        alert('No');
+        return;
+        const transactionId = $('#transactionDetails').text().split(',')[0].split(': ')[1];
+        $.ajax({
+            url: `/deleteTransaction/${transactionId}`,
+            method: 'DELETE',
+            success: function() {
+                alert('Transaction deleted successfully');
+                $('#transactionModal').hide();
+                table.ajax.reload();
+            },
+            error: function() {
+                alert('Failed to delete transaction');
+            }
+        });
+      });
+
+  });
+</script>
+
+  </body>
+</html>

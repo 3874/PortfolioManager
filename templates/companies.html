@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Portfolio Manager</title>
+    <meta content='width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no' name='viewport'>
+    <!-- Bootstrap 3.3.2 -->
+    <link href="/static/bootstrap/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+    <!-- Font Awesome Icons -->
+    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css" />
+    <!-- Ionicons -->
+    <link href="http://code.ionicframework.com/ionicons/2.0.0/css/ionicons.min.css" rel="stylesheet" type="text/css" />
+    <!-- DATA TABLES -->
+    <link href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css" rel="stylesheet" type="text/css" />
+    <!-- Theme style -->
+    <link href="/static/dist/css/AdminLTE.min.css" rel="stylesheet" type="text/css" />
+    <!-- AdminLTE Skins. Choose a skin from the css/skins 
+         folder instead of downloading all of them to reduce the load. -->
+    <link href="/static/dist/css/skins/_all-skins.min.css" rel="stylesheet" type="text/css" />
+
+
+    <style>
+      .example-modal .modal {
+        position: relative;
+        top: auto;
+        bottom: auto;
+        right: auto;
+        left: auto;
+        display: block;
+        z-index: 1;
+      }
+      .example-modal .modal {
+        background: transparent!important;
+      }
+      .label-width {
+        width: 80px; /* 원하는 너비로 조정 */
+        display: inline-block; /* 레이블을 블록으로 설정하여 너비 적용 */
+      }
+    </style>
+  </head>
+  <body class="skin-blue">
+    <div class="wrapper">
+      
+      <header class="main-header">
+        <a href="/" class="logo"><b>Admin</b>Portfolio</a>
+        <!-- Header Navbar: style can be found in header.less -->
+        <nav class="navbar navbar-static-top" role="navigation">
+          <!-- Sidebar toggle button-->
+          <a href="#" class="sidebar-toggle" data-toggle="offcanvas" role="button">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </a>
+          <div class="navbar-custom-menu">
+            <ul class="nav navbar-nav">
+              <li class="dropdown messages-menu">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                  <i class="fa fa-envelope-o"></i>
+                  <span class="label label-success">2</span>
+                </a>
+                <ul class="dropdown-menu">
+                  <li class="header">You have 2 messages</li>
+                  <li>
+                    <!-- inner menu: contains the actual data -->
+                    <ul class="menu">
+                      <li><!-- start message -->
+                        <a href="#">
+                          <div class="pull-left">
+                            <img src="/static/dist/img/user2-160x160.jpg" class="img-circle" alt="User Image"/>
+                          </div>
+                          <h4>
+                            Support Team
+                            <small><i class="fa fa-clock-o"></i> 5 mins</small>
+                          </h4>
+                          <p>Why not buy a new awesome theme?</p>
+                        </a>
+                      </li>
+                      <li>
+                        <a href="#">
+                          <div class="pull-left">
+                            <img src="/static/dist/img/user4-128x128.jpg" class="img-circle" alt="user image"/>
+                          </div>
+                          <h4>
+                            Reviewers
+                            <small><i class="fa fa-clock-o"></i> 2 days</small>
+                          </h4>
+                          <p>Why not buy a new awesome theme?</p>
+                        </a>
+                      </li>
+                    </ul>
+                  </li>
+                  <li class="footer"><a href="#">See All Messages</a></li>
+                </ul>
+              </li>
+              <!-- Notifications: style can be found in dropdown.less -->
+              <li class="dropdown notifications-menu">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                  <i class="fa fa-bell-o"></i>
+                  <span class="label label-warning">2</span>
+                </a>
+                <ul class="dropdown-menu">
+                  <li class="header">You have 2 notifications</li>
+                  <li>
+                    <!-- inner menu: contains the actual data -->
+                    <ul class="menu">
+                      <li>
+                        <a href="#">
+                          <i class="fa fa-users text-aqua"></i> 5 new members joined today
+                        </a>
+                      </li>
+                      <li>
+                        <a href="#">
+                          <i class="fa fa-warning text-yellow"></i> Very long description here that may not fit into the page and may cause design problems
+                        </a>
+                      </li>
+                    </ul>
+                  </li>
+                  <li class="footer"><a href="#">View all</a></li>
+                </ul>
+              </li>
+
+              <!-- User Account: style can be found in dropdown.less -->
+              <li class="dropdown user user-menu">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                  <img src="/static/dist/img/user2-160x160.jpg" class="user-image" alt="User Image"/>
+                  <span class="hidden-xs">Francis Han</span>
+                </a>
+                <ul class="dropdown-menu">
+                  <!-- User image -->
+                  <li class="user-header">
+                    <img src="/static/dist/img/user2-160x160.jpg" class="img-circle" alt="User Image" />
+                    <p>
+                      Francis Han - CEO
+                      <small>Member since Nov. 2012</small>
+                    </p>
+                  </li>
+                  <!-- Menu Body -->
+
+                  <!-- Menu Footer-->
+                  <li class="user-footer">
+                    <div class="pull-left">
+                      <a href="#" class="btn btn-default btn-flat" id="myProfileBtn">Profile</a>
+                    </div>
+                    <div class="pull-right">
+                        <a href="#" class="btn btn-default btn-flat" id="signOutBtn">Sign out</a>
+                    </div>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+          </div>
+        </nav>
+      </header>
+      <!-- Left side column. contains the logo and sidebar -->
+      <aside class="main-sidebar">
+        <!-- sidebar: style can be found in sidebar.less -->
+        <section class="sidebar">
+          <!-- Sidebar user panel -->
+          <div class="user-panel">
+            <div class="pull-left image">
+              <img src="/static/dist/img/user2-160x160.jpg" class="img-circle" alt="User Image" />
+            </div>
+            <div class="pull-left info">
+              <p>Francis Han</p>
+
+              <a href="#"><i class="fa fa-circle text-success"></i> Online</a>
+            </div>
+          </div>
+          <!-- search form -->
+          <form action="#" method="get" class="sidebar-form">
+            <div class="input-group">
+              <input type="text" name="q" class="form-control" placeholder="Search..."/>
+              <span class="input-group-btn">
+                <button type='submit' name='seach' id='search-btn' class="btn btn-flat"><i class="fa fa-search"></i></button>
+              </span>
+            </div>
+          </form>
+          <!-- /.search form -->
+          <!-- sidebar menu: : style can be found in sidebar.less -->
+          <ul class="sidebar-menu">
+            <li class="header">MAIN</li>
+            <li>
+              <a href="/transactions">
+                <i class="fa fa-book"></i> <span>Transactions</span> 
+              </a>
+            </li>
+            <li class="active">
+              <a href="/companies">
+                <i class="fa fa-building"></i> <span>Companies</span> 
+              </a>
+            </li>
+            <li>
+              <a href="/funds">
+                <i class="fa fa-money"></i> <span>Funds</span> 
+              </a>
+            </li>
+            <li>
+              <a href="/users">
+                <i class="fa fa-users"></i> <span>Users</span> 
+              </a>
+            </li>
+
+
+            <li class="header">Additional</li>
+            <li><a href="/securities"><i class="fa fa-circle-o text-danger"></i> Securities</a></li>
+            <li><a href="/authTable"><i class="fa fa-circle-o text-warning"></i> Auth Table</a></li>
+            <li><a href="/advSearch"><i class="fa fa-circle-o text-info"></i> Advanced Search</a></li>
+          </ul>
+        </section>
+        <!-- /.sidebar -->
+      </aside>
+
+      <!-- Right side column. Contains the navbar and content of the page -->
+      <div class="content-wrapper">
+        <!-- Content Header (Page header) -->
+        <section class="content-header">
+          <h1 style="display: inline-block;">Companies</h1>
+          <small><button id="addBtn" class="btn btn-warning btn-sm" style="margin-left: 20px; display: inline-block;">Add</button></small>
+          <ol class="breadcrumb">
+            <li><a href="/"><i class="fa fa-dashboard"></i> Home</a></li>
+            <li class="active">Companies</li>
+          </ol>
+        </section>
+
+        <!-- Main content -->
+        <section class="content">
+          <div class="row">
+            <div class="col-xs-12">
+              <div class="box">
+                <div class="box-header">
+                  <h3 class="box-title">Data Table</h3>
+                </div><!-- /.box-header -->
+                <div class="box-body">
+                  <table id="companiesTable" class="table table-bordered table-hover">
+                    <thead>
+                      <tr>
+                        <th>Company ID</th>
+                        <th>Name</th>
+                        <th>En Name</th>
+                        <th>Country</th>
+                        <th>Sector</th>
+                      </tr>
+                    </thead>
+
+                  </table>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </section>
+      </div>
+      <footer class="main-footer">
+        <strong>Copyright &copy; 2025 Ylem Invest.</strong> All rights reserved.
+      </footer>
+    </div>
+
+    <div class="modal fade" id="CompanyModal" tabindex="-1" role="dialog" aria-labelledby="CompanyModalLabel">
+      <div class="modal-dialog" role="document">
+          <div class="modal-content">
+              <div class="modal-header">
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                  <h4 class="modal-title"><span id="addCompanyBtn">New Company</span>&nbsp;&nbsp;
+                    <small><button type="button" class="btn btn-danger btn-sm" id="deleteCompanyBtn" style="display: none;">Remove</button></small>
+                  </h4>
+                  
+              </div>
+              <div class="modal-body">
+                  <form id="CompanyForm">
+                      <div class="form-group">
+                          <label for="companyName">Company Name</label>
+                          <input type="text" class="form-control" id="companyName" placeholder="Enter company name" required>
+                      </div>
+                      <div class="form-group">
+                          <label for="companyEnName">Company Name (English)</label>
+                          <input type="text" class="form-control" id="companyEnName" placeholder="Enter company English name" required>
+                      </div>
+                      <div class="form-group">
+                          <label for="country">Country</label>
+                          <select id="country" class="form-control">
+                            <option value="US">United States</option>
+                            <option value="KR" selected>Korea</option>
+                            <option value="GE">Germany</option>
+                            <option value="CN">China</option>
+                            <option value="FR">Francs</option>
+                            <option value="JP">JAPAN</option>
+                          </select>
+                      </div>
+                      <div class="form-group">
+                          <label for="sector">Sector</label>
+                          <input type="text" class="form-control" id="sector" placeholder="Enter sector" required>
+                      </div>
+                      <div class="form-group">
+                          <label for="type">Type</label>
+                          <select id="type" class="form-control">
+                            <option value="private">Private</option>
+                            <option value="listing">Listing</option>
+                          </select>
+                      </div>
+                      <div class="form-group">
+                          <label for="reg_no">Registration Number</label>
+                          <input type="text" class="form-control" id="reg_no" placeholder="Enter registration number">
+                      </div>
+                      <div class="form-group">
+                          <label for="summary">Summary</label>
+                          <textarea class="form-control" id="summary" placeholder="Enter summary"></textarea>
+                      </div>
+                      <input type="hidden" id="companyId" value="">
+                  </form>
+              </div>
+              <div class="modal-footer">
+                  <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                  <button type="button" class="btn btn-primary" id="saveCompanyBtn">Add</button>
+                  <button type="button" class="btn btn-primary" id="updateCompanyBtn" style="display: none;">Update</button>
+              </div>
+          </div>
+      </div>
+    </div>
+
+    <!-- jQuery 2.1.3 -->
+    <script src="/static/plugins/jQuery/jQuery-2.1.3.min.js"></script>
+    <!-- Bootstrap 3.3.2 JS -->
+    <script src="/static/bootstrap/js/bootstrap.min.js" type="text/javascript"></script>
+    <!-- DATA TABES SCRIPT -->
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js" type="text/javascript"></script>
+    <script src="/static/plugins/datatables/dataTables.bootstrap.js" type="text/javascript"></script>
+    <!-- SlimScroll -->
+    <script src="/static/plugins/slimScroll/jquery.slimscroll.min.js" type="text/javascript"></script>
+    <!-- FastClick -->
+    <script src='/static/plugins/fastclick/fastclick.min.js'></script>
+    <!-- AdminLTE App -->
+    <script src="/static/dist/js/app.min.js" type="text/javascript"></script>
+    <!-- AdminLTE for demo purposes -->
+    <script src="/static/dist/js/demo.js" type="text/javascript"></script>
+    <script src="/static/js/basic.js" type="text/javascript"></script>
+    <!-- page script -->
+
+<script>
+  $(document).ready(function() {
+      // DataTable 초기화
+      const table = $('#companiesTable').DataTable({
+        ajax: {
+            url: '/getCompanies',
+            error: function(xhr, error, code) {
+                window.location.href = '/';
+            }
+        },
+        columns: [
+            { data: '_id', visible: false },
+            { data: 'companyName' },
+            { data: 'companyEnName'},
+            { data: 'country' },
+            { data: 'sector' },
+        ],
+        pageLength: 50
+      });
+
+      $('#companiesTable tbody').on('click', 'tr', function() {
+        $('#CompanyForm')[0].reset();
+        $("#addCompanyBtn").text("Update Company");
+        $('#updateCompanyBtn').css('display', 'inline-block');
+        $('#saveCompanyBtn').css('display', 'none'); 
+        $('#deleteCompanyBtn').css('display', 'inline-block');
+        $('#CompanyModal').modal('show');
+        const data = table.row(this).data();
+        const companyId = data._id;
+
+        $.ajax({
+            url: `/getCompany/${companyId}`,
+            method: 'GET',
+            success: function(response) {
+              console.log(response);
+              compDataMapping(response.data);
+            },
+            error: function() {
+                alert('Failed to load transaction details');
+            }
+        });
+      });
+
+      $('#closeModalBtn').on('click', function() {
+          $('#CompanyModal').modal('hide');
+      });
+
+      $('#addBtn').click(function() {
+        $('#CompanyForm')[0].reset();
+        $("#addCompanyBtn").text("New Company");
+        $('#updateCompanyBtn').css('display', 'none');
+        $('#saveCompanyBtn').css('display', 'inline-block'); 
+        $('#deleteCompanyBtn').css('display', 'none');
+        $('#CompanyModal').modal('show');
+      });
+
+      $('#deleteCompanyBtn').on('click', function() {
+        if (!confirm('Are you sure you want to delete this fund?')) { 
+          return;
+        }
+
+        const companyId = $('#companyId').val();
+        $.ajax({
+            url: `/deleteCompany/${companyId}`,
+            method: 'DELETE',
+            success: function() {
+                alert('Transaction deleted successfully');
+                $('#CompanyModal').modal('hide');
+                table.ajax.reload();
+            },
+            error: function() {
+                alert('Failed to delete transaction');
+            }
+        });
+      });
+
+      $('#saveCompanyBtn').click(function() {
+        const companyData = {
+            companyName: $('#companyName').val(),
+            companyEnName: $('#companyEnName').val(),
+            country: $('#country').val(),
+            sector: $('#sector').val(),
+            type: $('#type').val(),
+            reg_no: $('#reg_no').val(),
+            summary: $('#summary').val()
+        };
+
+        // AJAX 요청으로 데이터 전송
+        $.ajax({
+            url: '/addCompany',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(companyData),
+            success: function(response) {
+                if (response.status === 'success') {
+                    alert('Company added successfully!');
+                    $('#CompanyModal').modal('hide'); 
+                    table.ajax.reload();
+                } else {
+                    alert('Error adding company: ' + response.message);
+                }
+            },
+            error: function(xhr, status, error) {
+                alert('An error occurred: ' + error);
+            }
+        });
+      });
+
+      $('#updateCompanyBtn').click(function() {
+        const companyId = $('#companyId').val(); // 숨겨진 input에서 회사 ID 가져오기
+        const companyData = {
+            companyName: $('#companyName').val(),
+            companyEnName: $('#companyEnName').val(),
+            country: $('#country').val(),
+            sector: $('#sector').val(),
+            type: $('#type').val(),
+            reg_no: $('#reg_no').val(),
+            summary: $('#summary').val()
+        };
+
+        // AJAX 요청으로 데이터 전송
+        $.ajax({
+            url: `/updateCompany/${companyId}`, // 회사 ID를 URL에 포함
+            type: 'PUT', // PUT 메서드 사용
+            contentType: 'application/json',
+            data: JSON.stringify(companyData),
+            success: function(response) {
+                if (response.status === 'success') {
+                    alert('Company updated successfully!');
+                    $('#companiesTable').DataTable().ajax.reload();
+                    $('#CompanyModal').modal('hide'); 
+                } else {
+                    alert('Error updating company: ' + response.message);
+                }
+            },
+            error: function(xhr, status, error) {
+                alert('An error occurred: ' + error);
+            }
+        });
+      });
+
+      function compDataMapping(info) {
+        $('#companyId').val(info._id);
+        $('#companyName').val(info.companyName);
+        $('#companyEnName').val(info.companyEnName);
+        $('#country').val(info.country);
+        $('#sector').val(info.sector);
+        $('#type').val(info.type);
+        $('#reg_no').val(info.reg_no);
+        $('#summary').val(info.summary);
+      }
+  });
+</script>
+
+  </body>
+</html>
