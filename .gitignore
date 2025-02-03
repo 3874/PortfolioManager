@@ -10,5 +10,5 @@ ehthumbs.db
 *.exe
 
 setting/*.json
-db/
-drive/
+pages/
+documentation/
