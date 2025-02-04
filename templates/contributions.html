@@ -190,7 +190,7 @@
                 <i class="fa fa-building"></i> <span>Companies</span> 
               </a>
             </li>
-            <li class="active">
+            <li>
               <a href="/funds">
                 <i class="fa fa-money"></i> <span>Funds</span> 
               </a>
@@ -200,7 +200,7 @@
                 <i class="fa fa-users"></i> <span>Users</span> 
               </a>
             </li>
-            <li>
+            <li class="active">
               <a href="/contributions">
                   <i class="fa fa-tachometer"></i> <span>Contributions</span> 
               </a>
@@ -220,11 +220,11 @@
       <div class="content-wrapper">
         <!-- Content Header (Page header) -->
         <section class="content-header">
-          <h1 style="display: inline-block;">Funds</h1>
+          <h1 style="display: inline-block;">Contributions</h1>
           <small><button id="addBtn" class="btn btn-warning btn-sm" style="margin-left: 20px; display: inline-block;">Add</button></small>
           <ol class="breadcrumb">
             <li><a href="/"><i class="fa fa-dashboard"></i> Home</a></li>
-            <li class="active">Funds</li>
+            <li class="active">Contributions</li>
           </ol>
         </section>
 
@@ -237,15 +237,16 @@
                   <h3 class="box-title">Data Table</h3>
                 </div><!-- /.box-header -->
                 <div class="box-body">
-                  <table id="fundsTable" class="table table-bordered table-hover">
+                  <table id="contTable" class="table table-bordered table-hover">
                     <thead>
                       <tr>
-                        <th>Fund ID</th>
-                        <th>Name</th>
-                        <th>Country</th>
-                        <th>Unit</th>
-                        <th>Currency</th>
-                        <th>Toal Commitment</th>
+                        <th>Cont. ID</th>
+                        <th width="30px">Trans. ID</th>
+                        <th>Target Id</th>
+                        <th>Target</th>
+                        <th>Fund Id</th>
+                        <th>Fund</th>
+                        <th>Security</th>
                       </tr>
                     </thead>
 
@@ -262,98 +263,41 @@
       </footer>
     </div>
 
-    <div class="modal fade" id="FundModal" tabindex="-1" role="dialog" aria-labelledby="FundModalLabel">
+    <div class="modal fade" id="contModal" tabindex="-1" role="dialog" aria-labelledby="contModalLabel">
       <div class="modal-dialog" role="document">
           <div class="modal-content">
               <div class="modal-header">
                   <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                  <h4 class="modal-title"><span id="addFundBtn">New Fund</span>&nbsp;&nbsp;
-                    <small><button type="button" class="btn btn-danger btn-sm" id="deleteFundBtn" style="display: none;">Remove</button></small>
+                  <h4 class="modal-title"><span id="addcontBtn">New Contribution</span>&nbsp;&nbsp;
+                    <small><button type="button" class="btn btn-danger btn-sm" id="deletecontBtn" style="display: none;">Remove</button></small>
                   </h4>
               </div>
               <div class="modal-body">
-                  <form id="FundForm">
+                  <form id="contForm">
                       <div class="form-group">
-                          <label for="fundName">Fund Name</label>
-                          <input type="text" class="form-control" id="fundName" placeholder="Enter fund name" required>
+                          <label for="trans_id">Transaction ID</label>
+                          <input type="text" class="form-control" id="trans_id" placeholder="Enter fund name" readonly>
                       </div>
-                      <div class="form-group">
-                        <label for="country">Country</label>
-                        <select id="country" class="form-control" required>
-                            <option value="US">United States</option>
-                            <option value="KR" selected>Korea</option>
-                            <option value="GE">Germany</option>
-                            <option value="CN">China</option>
-                            <option value="FR">France</option>
-                            <option value="JP">Japan</option>
-                        </select>
-                      </div>
-                      <div class="form-group">
-                        <label for="currency">Currency</label>
-                        <select id="currency" class="form-control" required>
-                            <option value="KRW">KRW</option>
-                            <option value="USD">USD</option>
-                            <option value="EUR">EUR</option>
-                            <option value="JPY">JPY</option>
-                        </select>
-                      </div>
-                      <div class="form-group">
-                        <label for="unit">Unit</label>
-                        <select id="unit" class="form-control" required>
-                            <option value="million">Million</option>
-                            <option value="billion">Billion</option>
-                        </select>
-                      </div>
-                      <div class="form-group">
-                        <label for="totalComAmt">Total Commitment Amount</label>
-                        <input type="number" class="form-control" id="totalComAmt" placeholder="Enter total commitment amount" required>
-                      </div>
-                      <div class="form-group">
-                          <label for="GP_commit">GP Commitment</label>
-                          <input type="number" class="form-control" id="GP_commit" placeholder="Enter GP commitment" required>
-                      </div>
-                      <div class="form-group">
-                          <label for="mgt_fee">Management Fee</label>
-                          <input type="text" class="form-control" id="mgt_fee" placeholder="Enter management fee" required>
-                      </div>
-                      <div class="form-group">
-                        <label for="IRR">IRR</label>
-                        <input type="text" class="form-control" id="IRR" placeholder="Enter IRR" required>
-                      </div>
-                      <div class="form-group">
-                          <label for="carry">Carry Structure</label>
-                          <input type="text" class="form-control" id="carry" placeholder="Enter carry structure" required>
-                      </div>
-                      <div class="form-group">
-                          <label for="drawdown">Drawdown</label>
-                          <select id="drawdown" class="form-control" required>
-                            <option value="capital_call" selected>Capital Call</option>
-                            <option value="ad_hoc">Ad hoc</option>
-                            <option value="scheduled">Scheduled</option>
-                            <option value="mile_stone">Mile stone</option>
-                            <option value="reinvest">Reinvestment</option>
-                            <option value="Other">Other</option>
-                          </select>
-                      </div>
-                      <div class="form-group">
-                          <label for="leader">Leader ID</label>
-                          <input type="text" class="form-control" id="leader" placeholder="Enter leader ID" required>
-                      </div>
-                      <div class="form-group">
-                          <label for="establish">Establishment Date</label>
-                          <input type="date" class="form-control" id="establish" required>
-                      </div>
-                      <div class="form-group">
-                        <label for="notes">Notes</label>
-                        <textarea class="form-control" id="notes" placeholder="Enter notes"></textarea>
-                      </div>
-                      <input type="hidden" id="fundId" value="">
+                      <table id="tableGrid" class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>User Id</th>
+                                <th>Sourcing</th>
+                                <th>DD</th>
+                                <th>PIM</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody">
+                            <!-- JSON 데이터가 여기에 동적으로 추가됩니다. -->
+                        </tbody>
+                    </table>
+                      <input type="hidden" id="contId" value="">
                   </form>
               </div>
               <div class="modal-footer">
                   <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                  <button type="button" class="btn btn-primary" id="saveFundBtn">Add</button>
-                  <button type="button" class="btn btn-primary" id="updateFundBtn" style="display: none;">Update</button>
+                  <button type="button" class="btn btn-primary" id="savecontBtn">Add</button>
+                  <button type="button" class="btn btn-primary" id="updatecontBtn" style="display: none;">Update</button>
               </div>
           </div>
       </div>
@@ -379,41 +323,44 @@
 
 <script>
   $(document).ready(function() {
-      // DataTable 초기화
-      const table = $('#fundsTable').DataTable({
+
+      const table = $('#contTable').DataTable({
         ajax: {
-            url: '/getFunds',
+            url: '/getContributions',
             error: function(xhr, error, code) {
-                window.location.href = '/';
+                console.error('AJAX Error:', error); // 오류 메시지 출력
+                console.error('XHR:', xhr); // XHR 객체 출력
+                //window.location.href = '/';
             }
         },
         columns: [
             { data: '_id', visible: false },
-            { data: 'fundName' },
-            { data: 'country'},
-            { data: 'unit' },
-            { data: 'currency' },
-            { data: 'totalComAmt' },
+            { data: 'trans_id'},
+            { data: 'target_id', visible: false  },
+            { data: 'target' },
+            { data: 'fund_id', visible: false  },
+            { data: 'fund' },
+            { data: 'security_type' },
         ],
         pageLength: 50
       });
 
-      $('#fundsTable tbody').on('click', 'tr', function() {
-        $('#FundForm')[0].reset();
-        $("#addFundBtn").text("Update Fund");
-        $('#updateFundBtn').css('display', 'inline-block');
-        $('#saveFundBtn').css('display', 'none'); 
-        $('#deleteFundBtn').css('display', 'inline-block');
-        $('#FundModal').modal('show');
+      $('#contTable tbody').on('click', 'tr', function() {
+        $('#contForm')[0].reset();
+        $("#addcontBtn").text("Update Contribution");
+        $('#updatecontBtn').css('display', 'inline-block');
+        $('#savecontBtn').css('display', 'none'); 
+        $('#deletecontBtn').css('display', 'inline-block');
+        $('#contModal').modal('show');
         const data = table.row(this).data();
-        const fundId = data._id;
+        const contId = data._id;
 
         $.ajax({
-            url: `/getFund/${fundId}`,
+            url: `/getContribution/${contId}`,
             method: 'GET',
             success: function(response) {
               console.log(response);
-              fundDataMapping(response.data);
+              contDataMapping(response.data);
             },
             error: function() {
                 alert('Failed to load transaction details');
@@ -422,30 +369,30 @@
       });
 
       $('#closeModalBtn').on('click', function() {
-          $('#FundModal').modal('hide');
+          $('#contModal').modal('hide');
       });
 
       $('#addBtn').click(function() {
-        $('#FundForm')[0].reset();
-        $("#addFundBtn").text("New Company");
-        $('#updateFundBtn').css('display', 'none');
-        $('#saveFundBtn').css('display', 'inline-block'); 
-        $('#deleteFundBtn').css('display', 'none');
-        $('#FundModal').modal('show');
+        $('#contForm')[0].reset();
+        $("#addcontBtn").text("New Contribution");
+        $('#updatecontBtn').css('display', 'none');
+        $('#savecontBtn').css('display', 'inline-block'); 
+        $('#deletecontBtn').css('display', 'none');
+        $('#contModal').modal('show');
       });
 
-      $('#deleteFundBtn').on('click', function() {
+      $('#deletecontBtn').on('click', function() {
         if (!confirm('Are you sure you want to delete this fund?')) { 
           return;
         }
 
-        const fundId = $('#fundId').val();
+        const contId = $('#contId').val();
         $.ajax({
-            url: `/deleteFund/${fundId}`,
+            url: `/deleteContribution/${contId}`,
             method: 'DELETE',
             success: function() {
                 alert('Transaction deleted successfully');
-                $('#FundModal').modal('hide');
+                $('#contModal').modal('hide');
                 table.ajax.reload();
             },
             error: function() {
@@ -454,33 +401,22 @@
         });
       });
 
-      $('#saveFundBtn').click(function() {
-        const fundData = {
-          fundName: $('#fundName').val(),
-          country: $('#country').val(),
-          currency: $('#currency').val(),
-          unit: $('#unit').val(),
-          totalComAmt: $('#totalComAmt').val(),
-          GP_commit: $('#GP_commit').val(),
-          mgt_fee: $('#mgt_fee').val(),
-          IRR: $('#IRR').val(),
-          carry: $('#carry').val(),
-          drawdown: $('#drawdown').val(),
-          leader: $('#leader').val(),
-          establish: $('#establish').val(),
-          notes: $('#notes').val(),
+      $('#savecontBtn').click(function() {
+        const contData = {
+          trans_id: $('#trans_id').val(),
+          table: $('#table').val(),
         };
 
         // AJAX 요청으로 데이터 전송
         $.ajax({
-            url: '/addFund',
+            url: '/addContribution',
             type: 'POST',
             contentType: 'application/json',
-            data: JSON.stringify(fundData),
+            data: JSON.stringify(contData),
             success: function(response) {
                 if (response.status === 'success') {
                     alert('Company added successfully!');
-                    $('#FundModal').modal('hide'); 
+                    $('#contModal').modal('hide'); 
                     table.ajax.reload();
                 } else {
                     alert('Error adding company: ' + response.message);
@@ -492,35 +428,24 @@
         });
       });
 
-      $('#updateFundBtn').click(function() {
-        const fundId = $('#fundId').val(); 
-        const fundData = {
-          fundName: $('#fundName').val(),
-          country: $('#country').val(),
-          currency: $('#currency').val(),
-          unit: $('#unit').val(),
-          totalComAmt: $('#totalComAmt').val(),
-          GP_commit: $('#GP_commit').val(),
-          mgt_fee: $('#mgt_fee').val(),
-          IRR: $('#IRR').val(),
-          carry: $('#carry').val(),
-          drawdown: $('#drawdown').val(),
-          leader: $('#leader').val(),
-          establish: $('#establish').val(),
-          notes: $('#notes').val(),
+      $('#updatecontBtn').click(function() {
+        const contId = $('#contId').val(); 
+        const contData = {
+          trans_id: $('#trans_id').val(),
+          table: $('#table').val(),
         };
 
-        // AJAX 요청으로 데이터 전송
+
         $.ajax({
-            url: `/updateFund/${fundId}`, // 회사 ID를 URL에 포함
+            url: `/updateContribution/${contId}`, // 회사 ID를 URL에 포함
             type: 'PUT', // PUT 메서드 사용
             contentType: 'application/json',
-            data: JSON.stringify(fundData),
+            data: JSON.stringify(contData),
             success: function(response) {
                 if (response.status === 'success') {
                     alert('Company updated successfully!');
-                    $('#fundsTable').DataTable().ajax.reload();
-                    $('#FundModal').modal('hide'); 
+                    $('#contTable').DataTable().ajax.reload();
+                    $('#contModal').modal('hide'); 
                 } else {
                     alert('Error updating company: ' + response.message);
                 }
@@ -531,21 +456,30 @@
         });
       });
 
-      function fundDataMapping(info) {
-        $('#fundId').val(info._id);
-        $('#fundName').val(info.fundName); 
-        $('#country').val(info.country);
-        $('#totalComAmt').val(info.totalComAmt);
-        $('#GP_commit').val(info.GP_commit); 
-        $('#mgt_fee').val(info.mgt_fee);
-        $('#drawdown').val(info.drawdown);
-        $('#currency').val(info.currency); 
-        $('#unit').val(info.unit); 
-        $('#establish').val(info.establish); 
-        $('#IRR').val(info.IRR); 
-        $('#carry').val(info.carry);
-        $('#notes').val(info.notes);
-        $('#leader').val(info.leader);
+      function contDataMapping(info) {
+        console.log(info);
+        $('#contId').val(info._id);
+        $('#trans_id').val(info.trans_id); 
+        populateTableGrid(info.table);
+
+      }
+
+      function populateTableGrid(data) {
+          const termsBody = $('#tableBody');
+          termsBody.empty(); // 기존 내용 삭제
+
+          // data가 배열이므로 forEach를 사용하여 각 요소를 순회합니다.
+          data.forEach(item => {
+              termsBody.append(`
+                  <tr>
+                      <td><input type="text" class="form-control" value="${item.user_id}"></td>
+                      <td><input type="text" class="form-control" value="${item.sourcing}"></td>
+                      <td><input type="text" class="form-control" value="${item.dd}"></td>
+                      <td><input type="text" class="form-control" value="${item.pim}"></td>
+                      <td><button class="btn btn-danger btn-sm removeTermBtn">-</button></td>
+                  </tr>
+              `);
+          });
       }
   });
 </script>

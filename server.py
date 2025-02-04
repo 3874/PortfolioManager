@@ -30,6 +30,7 @@ users_collection = db['users']
 funds_collection = db['funds']
 companies_collection = db['companies']
 transactions_collection = db['transactions']
+contributions_collection = db['contributions']
 
 # Decorators
 def login_required(f):
@@ -96,7 +97,7 @@ def logout():
     session.pop('user_id', None)
     return jsonify({'status': 'success', 'message': 'Logged out'})
 
-# User Routes
+
 @app.route('/getUsers', methods=['GET'])
 @login_required
 def get_users():
@@ -156,6 +157,7 @@ def update_user(user_id):
         
         # 비밀번호가 없을 경우 비밀번호 업데이트를 생략
         update_fields = {
+            'ID': data.get('ID', ''),
             'name': data.get('name', ''),
             'hire_date': data.get('hire_date', ''),
             'position': data.get('position', ''),
@@ -419,6 +421,91 @@ def update_transaction():
     except (InvalidId, ValueError) as e:
         return jsonify({'status': 'error', 'message': str(e)}), 400
     
+@app.route('/getTransactionByUser/<user_id>', methods=['GET'])
+@login_required
+def get_transaction_by_user(user_id):
+    try:
+        # fund_id에 해당하는 모든 트랜잭션을 조회합니다.
+        transactions = list(transactions_collection.find({'user_id': user_id}))
+
+        # target_id별로 트랜잭션을 그룹핑할 딕셔너리 생성
+        grouped_transactions = {}
+
+        for transaction in transactions:
+            # ObjectId를 문자열로 변환
+            transaction['_id'] = str(transaction['_id'])
+
+            # 만약 trs_date가 문자열이라면 datetime 객체로 변환 (예시)
+            if isinstance(transaction.get('trs_date'), str):
+                transaction['trs_date'] = datetime.fromisoformat(transaction['trs_date'])
+
+            # target_id에 해당하는 회사 이름 조회
+            target_company = companies_collection.find_one({'_id': ObjectId(transaction['target_id'])})
+            transaction['target'] = target_company['companyName'] if target_company else 'Unknown'
+
+            # 그룹핑: 동일 target_id의 거래들을 모음
+            target_id = transaction['target_id']
+            if target_id not in grouped_transactions:
+                grouped_transactions[target_id] = {
+                    'target': transaction['target'],
+                    'target_id': transaction['target_id'],
+                    'unit': transaction['unit'],
+                    'currency': transaction['currency'],
+                    'transactions': [],
+                    'total_buy': 0,   # buy한 총금액 초기화
+                    'total_sell': 0   # sell한 총금액 초기화
+                }
+            
+            # 트랜잭션을 해당 그룹에 추가
+            grouped_transactions[target_id]['transactions'].append(transaction)
+            
+            # trs_type에 따라 각 그룹의 총금액 갱신
+            amount = transaction.get('amount', 0)
+            if transaction.get('trs_type', '').lower() == 'buy':
+                grouped_transactions[target_id]['total_buy'] += amount
+            elif transaction.get('trs_type', '').lower() == 'sell':
+                grouped_transactions[target_id]['total_sell'] += amount
+            else:
+                # 기타 유형의 경우 별도 처리 가능 (현재는 buy로 처리)
+                grouped_transactions[target_id]['total_buy'] += amount
+
+        # 각 그룹별로 xirr 함수를 이용해 IRR 계산
+        for group in grouped_transactions.values():
+            cashflows = []
+            # 거래일 기준으로 정렬 (필요시)
+            group['transactions'].sort(key=lambda x: x['trs_date'])
+            for txn in group['transactions']:
+                # trs_type에 따라 현금흐름 부호 결정:
+                # 'buy'이면 투자이므로 음수, 'sell'이면 회수이므로 양수로 처리
+                amount = txn.get('amount', 0)
+                if txn.get('trs_type', '').lower() == 'buy':
+                    cashflow = -amount
+                elif txn.get('trs_type', '').lower() == 'sell':
+                    cashflow = amount
+                else:
+                    # 기타 유형에 대해서는 기본적으로 음수 처리하거나 별도 로직 추가 가능
+                    cashflow = -amount
+
+                cashflows.append((txn['trs_date'], cashflow))
+
+            try:
+                # xirr 함수에 cashflows를 전달하여 IRR 계산
+                irr_value = xirr(cashflows)
+            except Exception as e:
+                # IRR 계산이 불가능한 경우 None 처리
+                irr_value = None
+
+            # 그룹 정보에 IRR 값 추가 (예: 소수점 4자리까지 표시)
+            group['irr'] = round(irr_value, 4) if irr_value is not None else None
+
+        # 최종 결과를 그룹별 리스트로 변환
+        result = list(grouped_transactions.values())
+
+        return jsonify({'status': 'success', 'data': result})
+    
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
 @app.route('/getTransactionByFund/<fund_id>', methods=['GET'])
 @login_required
 def get_transaction_by_fund(fund_id):
@@ -808,8 +895,6 @@ def delete_security(security_id):
     except Exception as e:
         return jsonify({'status': 'error', 'message': str(e)}), 500
 
-# Auth Access Collection Routes
-
 @app.route('/getAuthCollects', methods=['GET'])
 @login_required
 def get_auth_collects():
@@ -900,6 +985,112 @@ def delete_auth_collect(auth_id):
         return jsonify({'status': 'error', 'message': 'Invalid ID format'}), 400
     except Exception as e:
         return jsonify({'status': 'error', 'message': str(e)}), 500
+    
+# Contributions Routes
+@app.route('/getContributions', methods=['GET'])
+@login_required
+def get_contributions():
+    try:
+        contributions = list(contributions_collection.find())
+        for contribution in contributions:
+            contribution['_id'] = str(contribution['_id'])  # ObjectId를 문자열로 변환
+            
+            # trans_id를 사용하여 transactions_collection에서 trans_name 찾기
+            transaction = transactions_collection.find_one({'_id': ObjectId(contribution['trans_id'])})
+            contribution['target_id'] = transaction['target_id'] if transaction else 'Unknown' 
+            contribution['security_type'] = transaction['security_type'] if transaction else 'Unknown'
+            contribution['fund_id'] = transaction['fund_id'] if transaction else 'Unknown'
+
+            # target_id를 사용하여 companies_collection에서 회사명 찾기
+            if transaction and transaction['target_id']:
+                company = companies_collection.find_one({'_id': ObjectId(transaction['target_id'])})
+                contribution['target'] = company['companyName'] if company else 'Unknown'  # 회사명 추가
+            else:
+                contribution['target'] = 'Unknown'
+
+            # fund_id를 사용하여 funds_collection에서 펀드명 찾기
+            if transaction and transaction.get('fund_id'):
+                fund = funds_collection.find_one({'_id': ObjectId(transaction['fund_id'])})
+                contribution['fund'] = fund['fundName'] if fund else 'Unknown'  # 펀드명 추가
+            else:
+                contribution['fund'] = 'Unknown'
+
+        return jsonify({'status': 'success', 'data': contributions})
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+@app.route('/getContribution/<contribution_id>', methods=['GET'])
+@login_required
+def get_contribution(contribution_id):
+    try:
+        contribution = contributions_collection.find_one({'_id': ObjectId(contribution_id)})
+        if not contribution:
+            return jsonify({'status': 'error', 'message': 'Contribution not found'}), 404
+        contribution['_id'] = str(contribution['_id'])  # ObjectId를 문자열로 변환
+        return jsonify({'status': 'success', 'data': contribution})
+    except InvalidId:
+        return jsonify({'status': 'error', 'message': 'Invalid ID format'}), 400
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+@app.route('/deleteContribution/<contribution_id>', methods=['DELETE'])
+@login_required
+def delete_contribution(contribution_id):
+    try:
+        result = contributions_collection.delete_one({'_id': ObjectId(contribution_id)})
+        if result.deleted_count == 0:
+            return jsonify({'status': 'error', 'message': 'Contribution not found'}), 404
+        return jsonify({'status': 'success', 'message': 'Contribution deleted'})
+    except InvalidId:
+        return jsonify({'status': 'error', 'message': 'Invalid ID format'}), 400
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+@app.route('/updateContribution/<contribution_id>', methods=['PUT'])
+@login_required
+def update_contribution(contribution_id):
+    try:
+        data = request.json
+        update_fields = {
+            'trans_id': data.get('trans_id', ''),
+            'table': data.get('table', ''),
+            # 필요한 다른 필드 추가
+            'updatedAt': datetime.now()  # 업데이트 날짜
+        }
+
+        result = contributions_collection.update_one(
+            {'_id': ObjectId(contribution_id)},
+            {'$set': update_fields}
+        )
+
+        if result.modified_count == 0:
+            return jsonify({'status': 'error', 'message': 'Contribution not found or no changes made'}), 404
+        
+        return jsonify({'status': 'success', 'message': 'Contribution updated successfully'})
+    
+    except InvalidId:
+        return jsonify({'status': 'error', 'message': 'Invalid ID format'}), 400
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+@app.route('/addContribution', methods=['POST'])
+@login_required
+def add_contribution():
+    try:
+        data = request.json
+        contribution = {
+            'trans_id': data['trans_id'],
+            'table': data['table'],
+            # 필요한 다른 필드 추가
+            'createdAt': datetime.now(),
+            'updatedAt': datetime.now()
+        }
+
+        contributions_collection.insert_one(contribution)
+        return jsonify({'status': 'success', 'message': 'Contribution added successfully!'})
+    
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500
 
 def check_access_level(collection, user_id):
     user = users_collection.find_one({'_id': ObjectId(user_id)})
@@ -915,32 +1106,6 @@ def check_access_level(collection, user_id):
     return False
 
 def xirr(cashflows=None, dates=None, guess=0.1, tol=1e-6, max_iterations=100):
-    """
-    XIRR(내부수익률)을 계산하는 함수입니다.
-    
-    두 가지 입력 형식을 지원합니다.
-    
-    1. cashflows 인자에 (날짜, 현금흐름) 튜플들의 리스트를 전달하는 경우:
-       - dates 인자는 사용하지 않습니다.
-       
-    2. cashflows와 dates 인자에 각각 현금흐름과 날짜 리스트를 전달하는 경우:
-       - 두 리스트의 길이는 동일해야 합니다.
-    
-    Parameters:
-        cashflows (list): (date, cashflow) 튜플의 리스트 또는 현금흐름 리스트.
-        dates (list, optional): 날짜 리스트 (datetime.date 또는 datetime.datetime).
-        guess (float): IRR에 대한 초기 추정치 (기본값: 0.1).
-        tol (float): 허용 오차 (기본값: 1e-6).
-        max_iterations (int): 최대 반복 횟수 (기본값: 100).
-    
-    Returns:
-        float: 계산된 내부수익률.
-    
-    Raises:
-        ValueError: 입력 데이터 형식이나 길이가 올바르지 않은 경우.
-        ZeroDivisionError: 도함수의 값이 0이 되어 계산할 수 없는 경우.
-        RuntimeError: 최대 반복 횟수 내에 수렴하지 않은 경우.
-    """
     
     # 입력 형식에 따라 데이터를 처리
     if cashflows is None:

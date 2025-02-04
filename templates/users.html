@@ -200,6 +200,11 @@
                 <i class="fa fa-users"></i> <span>Users</span> 
               </a>
             </li>
+            <li>
+              <a href="/contributions">
+                  <i class="fa fa-tachometer"></i> <span>Contributions</span> 
+              </a>
+            </li>
 
 
             <li class="header">Additional</li>
@@ -216,7 +221,7 @@
         <!-- Content Header (Page header) -->
         <section class="content-header">
           <h1 style="display: inline-block;">Users</h1>
-          <small><button id="addBtn" class="btn btn-warning btn-sm" style="margin-left: 20px; ">Add</button></small>
+          <small><button id="addBtn" class="btn btn-warning btn-sm" style="margin-left: 20px; visibility:hidden;">Add</button></small>
           <ol class="breadcrumb">
             <li><a href="/"><i class="fa fa-dashboard"></i> Home</a></li>
             <li class="active">Users</li>
@@ -440,6 +445,7 @@
       $('#updateUserBtn').click(function() {
         const userId = $('#userId').val();
         const userData = {
+          ID: $('#ID').val(), 
           name: $('#name').val(), // 사용자 이름
           hire_date: $('#hire_date').val(), // 고용 날짜
           position: $('#position').val(), // 직위
