@@ -311,6 +311,7 @@
               success: function(response) {
                   if (response.status === 'success') {
                     localStorage.setItem('transactionData', JSON.stringify(updatedData));
+                    console.log(updatedData);
                     alert('Transaction updated successfully!');
                     window.location.href ='/transactions'; 
                   } else {
