@@ -228,6 +228,25 @@ def delete_user(user_id):
     except InvalidId:
         return jsonify({'status': 'error', 'message': 'Invalid ID format'}), 400
 
+@app.route('/searchUser', methods=['GET'])
+@login_required
+def search_user():
+    search_query = request.args.get('query', '').strip()
+    if not search_query:
+        return jsonify({'status': 'error', 'message': 'Query parameter is required'}), 400
+
+    users = list(users_collection.find({
+        '$or': [
+            {'ID': {'$regex': search_query, '$options': 'i'}},  # 사용자 ID 검색
+            {'name': {'$regex': search_query, '$options': 'i'}}  # 사용자 이름 검색
+        ]
+    }, {'_id': 1, 'ID': 1, 'name': 1}))  # 필요한 필드만 반환
+
+    for user in users:
+        user['_id'] = str(user['_id'])  # ObjectId를 문자열로 변환
+
+    return jsonify({'status': 'success', 'data': users})
+
 # Company Routes
 @app.route('/addCompany', methods=['POST'])
 @login_required
@@ -360,14 +379,14 @@ def add_transaction():
             'prevalue': data['prevalue'],
             'amount': float(data['amount']),  # 금액을 float으로 변환
             'trs_date': datetime.strptime(data['trs_date'], '%Y-%m-%d'),  # 날짜 형식 변환
-            'notes': data.get('notes', ''),  # notes는 선택적
-            'terms': data.get('terms', {}),  # terms는 선택적
+            'notes': data.get('notes', ''), 
+            'terms': data.get('terms', {}), 
+            'contributors': data.get('contributors', []),
             'createdBy': session['user_id'],
             'createdAt': datetime.now(),
             'updatedAt': datetime.now()
         }
         
-        # 트랜잭션 추가
         transactions_collection.insert_one(transaction)
         return jsonify({'status': 'success', 'message': 'Transaction added'})
     
@@ -602,7 +621,7 @@ def get_transaction(transaction_id):
         if not transaction:
             return jsonify({'status': 'error', 'message': 'Transaction not found'}), 404
         transaction['_id'] = str(transaction['_id']) 
-        counterparty = companies_collection.find_one({'_id': ObjectId(transaction['target_id'])})
+        counterparty = companies_collection.find_one({'_id': ObjectId(transaction['counterparty_id'])})
         transaction['counterparty'] = counterparty['companyName'] if counterparty else 'Unknown'
         target_company = companies_collection.find_one({'_id': ObjectId(transaction['target_id'])})
         transaction['target'] = target_company['companyName'] if target_company else 'Unknown'
