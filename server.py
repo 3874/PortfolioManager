@@ -3,24 +3,27 @@ from pymongo import MongoClient
 from bson.objectid import ObjectId
 from bson.errors import InvalidId
 from bson.binary import Binary
-from datetime import datetime, date
-import bcrypt
+from datetime import datetime
+import bcrypt, json
 from jinja2.exceptions import TemplateNotFound
 from functools import wraps
 from bson import ObjectId
 
+with open('setting/config.json', 'r') as config_file:
+    config = json.load(config_file)
+
 app = Flask(__name__)
-app.secret_key = '1234567890'  # Change this in production!
+app.secret_key = config['SECRET_KEY']  # Change this in production!
 app.config.update(
     SESSION_COOKIE_HTTPONLY=True,
-    SESSION_COOKIE_SECURE=False,    # Set to True in production with HTTPS
+    SESSION_COOKIE_SECURE=config['SESSION_COOKIE_SECURE'],     # Set to True in production with HTTPS
     SESSION_COOKIE_SAMESITE='Lax'
 )
-PM_port = 23423
+PM_port = config['PM_PORT']
 
 # MongoDB connection
-client = MongoClient('mongodb://localhost:27017/')
-db = client['PortfolioManager']
+client = MongoClient(config['MONGODB_URI'])
+db = client[config['DB_NAME']]
 AccessLevel = [{'role': 'admin', 'score': 0}, {'role': 'manager', 'score': 1}, {'role': 'editor', 'score': 2}, {'role': 'user', 'score': 3}]
 
 # Collections
