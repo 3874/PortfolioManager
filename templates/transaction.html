@@ -148,6 +148,27 @@
                         
                     </td>
                   </tr>
+                  <tr id="contributorsRow">
+                    <td><label for="contributors" class="label-width">Contributors:</label>
+                      <button id="addContributorBtn" class="btn btn-success btn-sm" style="margin-left: 10px;">+</button>
+                    </td>
+                    <td colspan="3">
+                        <table id="contributorGrid" class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th hidden>ID</th>
+                                    <th>Name</th>
+                                    <th>Sourcing</th>
+                                    <th>Reviewing</th>
+                                    <th>Managing</th>
+                                </tr>
+                            </thead>
+                            <tbody id="contributorBody">
+                                <!-- JSON 데이터가 여기에 동적으로 추가됩니다. -->
+                            </tbody>
+                        </table>
+                    </td>
+                  </tr>
                   <tr>
                       <td><label for="notes" class="label-width">Notes:</label></td>
                       <td><textarea id="notes" rows="10" style="width: 100%;"></textarea></td>
@@ -294,7 +315,8 @@
                 amount: parseFloat($('#amount').val()),
                 trs_date: $('#trsDate').val(),
                 notes: $('#notes').val(),
-                terms: {}
+                terms: {},
+                contributors: []
             };
 
           $('#termsBody tr').each(function() {
@@ -302,6 +324,20 @@
               const value = $(this).find('input').eq(1).val();
               updatedData.terms[key] = value;
           });
+
+          $('#contributorBody tr').each(function() {
+              const userId = $(this).find('p').attr('data-id');
+              const name = $(this).find('p').text(); 
+              const contributorData = {
+                  userId: userId,
+                  name: name,
+                  sourcing: $(this).find('input').eq(0).val(),
+                  dd: $(this).find('input').eq(1).val(),
+                  pim: $(this).find('input').eq(2).val()
+              };
+              updatedData.contributors.push(contributorData);
+          });
+
 
           $.ajax({
               url: `/updateTransaction`, // 서버의 업데이트 엔드포인트
@@ -323,6 +359,41 @@
               }
           });
         });
+
+
+        $('#addContributorBtn').click(function() {
+            $('#contributorBody').append(`
+                <tr>
+                    <td><button id="selectUserBtn" class="btn btn-default btn-sm">Name</button></td>
+                    <td><input type="number" class="form-control" placeholder="%"></td>
+                    <td><input type="number" class="form-control" placeholder="%"></td>
+                    <td><input type="number" class="form-control" placeholder="%"></td>
+                    <td><button class="btn btn-danger btn-sm removeContriBtn">-</button></td>
+                </tr>
+            `);
+        });
+
+        $(document).on('click', '.removeContriBtn', function() {
+            $(this).closest('tr').remove();
+        });
+
+        $('#contributorBody').on('click', '#selectUserBtn', function() {
+            const row = $(this).closest('tr');
+            $('#results').empty();
+            $("#searchModal").modal("show");
+            searchMode = 'user';
+            $(document).on('click', '.result-item', function() {
+                handleUserSelection(row, $(this).data('id'), $(this).text());
+            });
+        });
+
+        function handleUserSelection(row, selectedId, selectedName) {
+            $("#searchModal").modal("hide");
+            row.find('#selectUserBtn').remove(); 
+            const inputField = `<p data-id="${selectedId}">${selectedName}</p>`;
+            row.find('td:first-child').append(inputField);
+        }
+
 
         $('#closeButton').click(function() {
           window.location.href ='/transactions'; 
@@ -360,6 +431,8 @@
             targetURL = '/searchFund';
           } else if (searchMode == 'counterparty' || searchMode == 'target') {
             targetURL = '/searchCompany';
+          } else if (searchMode == 'user') {
+            targetURL = '/searchUser';
           } else {
             alert("No search Mode");
             return;
@@ -386,8 +459,15 @@
                       </div>
                     `);
                   });
-                } 
-
+                } else if (searchMode == 'user') {
+                  response.data.forEach(function(item) {
+                    $('#results').append(`
+                      <div style="padding: 5px; cursor: pointer;" class="result-item" data-id="${item._id}">
+                        ${item.name}
+                      </div>
+                    `);
+                  });
+                }
               } else {
                 alert('No results found.');
               }
@@ -439,6 +519,19 @@
           $('#unit').val(transactionData.unit);
           $('#notes').val(transactionData.notes);
           populateTermsGrid(transactionData.terms);
+          if (transactionData.contributors && transactionData.contributors.length > 0) {
+                transactionData.contributors.forEach(contributor => {
+                    $('#contributorBody').append(`
+                        <tr>
+                            <td><p data-id="${contributor.userId}">${contributor.name}</p></td>
+                            <td><input type="number" class="form-control" value="${contributor.sourcing}"></td>
+                            <td><input type="number" class="form-control" value="${contributor.dd}"></td>
+                            <td><input type="number" class="form-control" value="${contributor.pim}"></td>
+                            <td><button class="btn btn-danger btn-sm removeContriBtn">-</button></td>
+                        </tr>
+                    `);
+                });
+            }
 
         };
 

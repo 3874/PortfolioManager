@@ -67,12 +67,12 @@
                   <td><label for="trsType" class="label-width">Transaction Type:</label></td>
                   <td>
                     <select id="trsType" class="form-control">
-                      <option value="buy">Buy</option>
+                      <option value="buy" selected>Buy</option>
                       <option value="sell">Sell</option>
                       <option value="redeem">Redeem</option>
                       <option value="interest">Interest</option>
                       <option value="convert">Convert</option>
-                      <option value="warrant" selected>Exercise Warrants</option>
+                      <option value="warrant">Exercise Warrants</option>
                     </select>
                   </td>
                 </tr>
@@ -142,7 +142,7 @@
                       
                   </td>
                 </tr>
-                <tr>
+                <tr id="contributorsRow">
                   <td><label for="contributors" class="label-width">Contributors:</label>
                     <button id="addContributorBtn" class="btn btn-success btn-sm" style="margin-left: 10px;">+</button>
                   </td>
@@ -236,9 +236,15 @@
         });
 
         $('#trsType, #securityType').change(function() {
-
             const selectedTrsType = $('#trsType').val();
             const selectedSecurityType = $('#securityType').val();
+
+            // contributors 표시/숨김 처리
+            if (selectedTrsType === 'buy') {
+                $('#contributorsRow').css('display', 'table-row');
+            } else {
+                $('#contributorsRow').css('display', 'none');
+            }
 
             // terms 초기화
             $('#termsBody').empty();
@@ -251,7 +257,7 @@
             console.log(matchedSecurities);
             // terms가 있는 경우 표시
             if (matchedSecurities.length > 0) {
-                const terms = matchedSecurities[0].terms; // 첫 번째 일치하는 보안의 terms 가져오기
+                const terms = matchedSecurities[0].terms;
                 for (const key in terms) {
                     $('#termsBody').append(`
                         <tr>
@@ -272,6 +278,13 @@
                     <td><button class="btn btn-danger btn-sm removeTermBtn">-</button></td>
                 </tr>
             `);
+        });
+
+        $(document).ready(function() {
+            const initialTrsType = $('#trsType').val();
+            if (initialTrsType !== 'buy') {
+                $('#contributorsRow').css('display', 'none'); // 또는 위의 다른 방법 사용
+            }
         });
 
         $(document).on('click', '.removeTermBtn', function() {
