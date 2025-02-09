@@ -8,11 +8,10 @@ import bcrypt, json
 from jinja2.exceptions import TemplateNotFound
 from functools import wraps
 from bson import ObjectId
+import numpy as np
 
 with open('setting/config.json', 'r') as config_file:
     config = json.load(config_file)
-
-print (config)
 
 app = Flask(__name__)
 app.secret_key = config['SECRET_KEY']  # Change this in production!
@@ -64,7 +63,7 @@ def check_login_status():
         return jsonify({'status': 'logged_in'})
     else:
         return jsonify({'status': 'not_logged_in'})
-# Auth Routes
+
 @app.route('/authenticateUser', methods=['POST'])
 def authenticate_user():
     data = request.json
@@ -102,7 +101,6 @@ def authenticate_user():
 def logout():
     session.pop('user_id', None)
     return jsonify({'status': 'success', 'message': 'Logged out'})
-
 
 @app.route('/getUsers', methods=['GET'])
 @login_required
@@ -219,7 +217,6 @@ def get_user(user_id):
     except Exception as e:
         return jsonify({'status': 'error', 'message': str(e)}), 500
 
-
 @app.route('/deleteUser/<user_id>', methods=['DELETE'])
 @login_required
 def delete_user(user_id):
@@ -315,7 +312,6 @@ def update_company(company_id):
         return jsonify({'status': 'error', 'message': 'Invalid ID format'}), 400
     except Exception as e:
         return jsonify({'status': 'error', 'message': str(e)}), 500
-
 
 # Company Routes
 @app.route('/getCompany/<company_id>', methods=['GET'])
@@ -450,88 +446,31 @@ def update_investment():
     except (InvalidId, ValueError) as e:
         return jsonify({'status': 'error', 'message': str(e)}), 400
     
-@app.route('/getInvestmentByUser/<user_id>', methods=['GET'])
+@app.route('/getInvestmentsByUser/<user_id>', methods=['GET'])
 @login_required
-def get_investment_by_user(user_id):
+def get_investments_by_user(user_id):
     try:
-        # fund_id에 해당하는 모든 트랜잭션을 조회합니다.
-        transactions = list(investments_collection.find({'user_id': user_id}))
+        investments = list(investments_collection.find({'contributors': {'$elemMatch': {'userId': user_id}}}))
+        for investment in investments:
+            investment['_id'] = str(investment['_id']) 
+            target_id = investment.get('target_id')
+            if target_id:
+                company = companies_collection.find_one({'_id': ObjectId(target_id)})
+                if company:
+                    investment['target'] = company.get('companyName', 'No target') 
+            cash_flows = []  
+            cash_flows.append({'date': investment['trs_date'].strftime('%Y-%m-%d'), 'amount': -float(investment['amount'])})  
 
-        # target_id별로 트랜잭션을 그룹핑할 딕셔너리 생성
-        grouped_transactions = {}
-
-        for transaction in transactions:
-            # ObjectId를 문자열로 변환
-            transaction['_id'] = str(transaction['_id'])
-
-            # 만약 trs_date가 문자열이라면 datetime 객체로 변환 (예시)
-            if isinstance(transaction.get('trs_date'), str):
-                transaction['trs_date'] = datetime.fromisoformat(transaction['trs_date'])
-
-            # target_id에 해당하는 회사 이름 조회
-            target_company = companies_collection.find_one({'_id': ObjectId(transaction['target_id'])})
-            transaction['target'] = target_company['companyName'] if target_company else 'Unknown'
-
-            # 그룹핑: 동일 target_id의 거래들을 모음
-            target_id = transaction['target_id']
-            if target_id not in grouped_transactions:
-                grouped_transactions[target_id] = {
-                    'target': transaction['target'],
-                    'target_id': transaction['target_id'],
-                    'currency': transaction['currency'],
-                    'transactions': [],
-                    'total_buy': 0,   # buy한 총금액 초기화
-                    'total_sell': 0   # sell한 총금액 초기화
-                }
+            if 'transactions' in investment:
+                for transaction in investment['transactions']:
+                    if transaction['transaction_type'] in ['sell', 'redeem', 'interest', 'dividend', 'capReduct']:
+                        transaction_date = transaction['date'] if isinstance(transaction['date'], str) else transaction['date'].strftime('%Y-%m-%d')
+                        cash_flows.append({'date': transaction_date, 'amount': float(transaction['amount'])})  
             
-            # 트랜잭션을 해당 그룹에 추가
-            grouped_transactions[target_id]['transactions'].append(transaction)
-            
-            # trs_type에 따라 각 그룹의 총금액 갱신
-            amount = transaction.get('amount', 0)
-            if transaction.get('trs_type', '').lower() == 'buy':
-                grouped_transactions[target_id]['total_buy'] += amount
-            elif transaction.get('trs_type', '').lower() == 'sell':
-                grouped_transactions[target_id]['total_sell'] += amount
-            else:
-                # 기타 유형의 경우 별도 처리 가능 (현재는 buy로 처리)
-                grouped_transactions[target_id]['total_buy'] += amount
-
-        for group in grouped_transactions.values():
-            cashflows = []
-            # 거래일 기준으로 정렬 (필요시)
-            group['transactions'].sort(key=lambda x: x['trs_date'])
-            for txn in group['transactions']:
-                # trs_type에 따라 현금흐름 부호 결정:
-                # 'buy'이면 투자이므로 음수, 'sell'이면 회수이므로 양수로 처리
-                amount = txn.get('amount', 0)
-                if txn.get('trs_type', '').lower() == 'buy':
-                    cashflow = -amount
-                elif txn.get('trs_type', '').lower() == 'sell':
-                    cashflow = amount
-                else:
-                    # 기타 유형에 대해서는 기본적으로 음수 처리하거나 별도 로직 추가 가능
-                    cashflow = -amount
-
-                cashflows.append((txn['trs_date'], cashflow))
-
-            try:
-                # xirr 함수에 cashflows를 전달하여 IRR 계산
-                irr_value = xirr(cashflows)
-            except Exception as e:
-                # IRR 계산이 불가능한 경우 None 처리
-                irr_value = None
-
-            # 그룹 정보에 IRR 값 추가 (예: 소수점 4자리까지 표시)
-            group['irr'] = round(irr_value, 4) if irr_value is not None else None
-
-        # 최종 결과를 그룹별 리스트로 변환
-        result = list(grouped_transactions.values())
-
-        return jsonify({'status': 'success', 'data': result})
-    
-    except Exception as e:
-        return jsonify({'status': 'error', 'message': str(e)}), 500
+                    
+        return jsonify({'status': 'success', 'data': investments})
+    except InvalidId:
+        return jsonify({'status': 'error', 'message': 'Invalid ID format'}), 400
 
 @app.route('/getInvestmentByFund/<fund_id>', methods=['GET'])
 @login_required
@@ -780,8 +719,7 @@ def get_funds():
     
     funds = list(funds_collection.find())
     for fund in funds:
-        fund['_id'] = str(fund['_id'])  # ObjectId를 문자열로 변환
-        # 각 필드가 없을 경우 빈 문자열로 설정
+        fund['_id'] = str(fund['_id'])
         fund['fundName'] = fund.get('fundName', '') or ''
         fund['country'] = fund.get('country', '') or ''
         fund['unit'] = fund.get('unit', '') or ''
@@ -795,6 +733,23 @@ def get_funds():
         fund['establish'] = fund.get('establish', '') or ''
         fund['IRR'] = fund.get('IRR', '') or ''
         fund['carry'] = fund.get('carry', '') or ''
+
+    return jsonify({'status': 'success', 'data': funds})
+
+@app.route('/getFundsByUser/<user_id>', methods=['GET'])
+@login_required
+def get_funds_by_user(user_id):
+
+    funds = list(funds_collection.find({'leader': user_id}))
+    for fund in funds:
+        fund['_id'] = str(fund['_id']) 
+        fund['fundName'] = fund.get('fundName', '') or ''
+        fund['country'] = fund.get('country', '') or ''
+        fund['unit'] = fund.get('unit', '') or ''
+        fund['currency'] = fund.get('currency', '') or ''
+        fund['totalComAmt'] = fund.get('totalComAmt', '') or ''
+        fund['leader'] = fund.get('leader', '') or ''
+        fund['IRR'] = fund.get('IRR', '') or ''
 
     return jsonify({'status': 'success', 'data': funds})
 
@@ -872,7 +827,6 @@ def add_security():
     
     except Exception as e:
         return jsonify({'status': 'error', 'message': str(e)}), 500
-
 
 @app.route('/updateSecurity/<security_id>', methods=['PUT'])
 @login_required
@@ -1131,66 +1085,7 @@ def check_access_level(collection, user_id):
     
     return False
 
-def xirr(cashflows=None, dates=None, guess=0.1, tol=1e-6, max_iterations=100):
-    
-    # 입력 형식에 따라 데이터를 처리
-    if cashflows is None:
-        raise ValueError("현금흐름 데이터가 제공되어야 합니다.")
-    
-    # cashflows가 (날짜, 현금흐름) 튜플들의 리스트인 경우
-    if dates is None:
-        if not isinstance(cashflows, list) or len(cashflows) < 2:
-            raise ValueError("최소 두 개 이상의 (날짜, 현금흐름) 튜플이 필요합니다.")
-        # 날짜와 현금흐름을 분리하고, 날짜를 기준으로 정렬
-        cashflows = sorted(cashflows, key=lambda x: x[0])
-        dates = [cf[0] for cf in cashflows]
-        amounts = [cf[1] for cf in cashflows]
-    else:
-        # cashflows와 dates가 각각 리스트 형태로 주어지는 경우
-        if len(cashflows) != len(dates):
-            raise ValueError("cashflows와 dates의 길이는 동일해야 합니다.")
-        if len(cashflows) < 2:
-            raise ValueError("최소 두 개 이상의 거래가 필요합니다.")
-        # 두 리스트를 날짜 기준으로 정렬
-        combined = sorted(zip(dates, cashflows), key=lambda x: x[0])
-        dates, amounts = zip(*combined)
-        dates = list(dates)
-        amounts = list(amounts)
-    
-    # 투자와 회수가 모두 있는지 확인
-    if not (any(amt > 0 for amt in amounts) and any(amt < 0 for amt in amounts)):
-        raise ValueError("양의 현금흐름과 음의 현금흐름이 모두 존재해야 IRR을 계산할 수 있습니다.")
-    
-    # 기준 날짜: 첫 번째 날짜
-    t0 = dates[0]
-    
-    def npv(r):
-        total = 0.0
-        for amt, dt in zip(amounts, dates):
-            t = (dt - t0).days / 365.0
-            total += amt / ((1 + r) ** t)
-        return total
-    
-    def npv_derivative(r):
-        total = 0.0
-        for amt, dt in zip(amounts, dates):
-            t = (dt - t0).days / 365.0
-            total += -t * amt / ((1 + r) ** (t + 1))
-        return total
 
-    # 초기 추정치로 Newton-Raphson 방법 수행
-    r = guess
-    for i in range(max_iterations):
-        f_value = npv(r)
-        deriv_value = npv_derivative(r)
-        if deriv_value == 0:
-            raise ZeroDivisionError("도함수의 값이 0이 되어 수렴할 수 없습니다.")
-        new_r = r - f_value / deriv_value
-        if abs(new_r - r) < tol:
-            return new_r
-        r = new_r
-
-    raise RuntimeError("IRR 계산이 최대 반복 횟수 내에 수렴하지 않았습니다.")
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=PM_port)  # 모든 IP에서 접근 가능

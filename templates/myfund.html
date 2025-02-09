@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Portfolio Manager</title>
+    <meta content='width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no' name='viewport'>
+    <!-- Bootstrap 3.3.2 -->
+    <link href="/static/bootstrap/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+    <!-- Font Awesome Icons -->
+    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css" />
+    <!-- Ionicons -->
+    <link href="http://code.ionicframework.com/ionicons/2.0.0/css/ionicons.min.css" rel="stylesheet" type="text/css" />
+    <!-- Theme style -->
+    <link href="/static/dist/css/AdminLTE2.min.css" rel="stylesheet" type="text/css" />
+    <link href="/static/dist/css/skins/skin-blue.min.css" rel="stylesheet" type="text/css" />
+
+
+  </head>
+  <body class="skin-blue fixed" data-spy="scroll" data-target="#scrollspy">
+    <div class="wrapper">
+
+      <header class="main-header">
+
+        <nav class="navbar navbar-static-top" role="navigation">
+            <a href="/" class="logo"><b>My</b>Fund</a>            
+            <div class="navbar-custom-menu" style="display: flex; align-items: center; height: 100%; padding-top: 10px;"> 
+              <ul class="nav navbar-nav" style="display: flex; justify-content: center; margin: auto;">               
+                  <li><button id="closeButton" type="button" class="btn btn-warning">Close</button></li>
+              </ul>
+            </div>
+        </nav>
+      </header>
+
+      <div class="content-wrapper">
+
+        <div class="content body" id="transactionDetails">
+
+          <table class="table table-centered">
+              <tbody>
+                  <tr>
+                    <td><label for="fundName" class="label-width">Fund Name:</label><br>
+                    </td>
+                    <td><p id="fundName">Ylem AI-Agri fund 1st</p>
+                      (<small id="fundId">679777b8d7ec214d7bd1e5d4</small>)</td>
+                  </tr>
+                  <tr>
+                    <td><label for="country" class="label-width">Country:</label><br>
+                    </td>
+                    <td><input type="text" id="country" class="form-control" value="" readonly /></td>
+                  </tr>
+                  <tr>
+                    <td><label for="currency" class="label-width">Currency:</label></td>
+                    <td><input type="text" id="currency" class="form-control" value="" readonly /></td>
+                  </tr>
+                  <tr>
+                    <td><label for="mgt_fee" class="label-width">Management Fee:</label></td>
+                    <td><input type="text" id="mgt_fee" class="form-control" value="" readonly/></td>
+                  </tr>
+                  <tr>
+                    <td><label for="IRR" class="label-width">IRR:</label></td>
+                    <td><input type="text" id="IRR" class="form-control" value="" readonly/></td>
+                  </tr>
+                  <tr>
+                    <td><label for="carry" class="label-width">Carry:</label></td>
+                    <td><input type="text" id="carry" class="form-control" value="" readonly/></td>
+                  </tr>
+                  <tr>
+                    <td><label for="GP_commit" class="label-width">GP Commit:</label></td>
+                    <td><input type="text" id="GP_commit" class="form-control" value="" readonly/></td>
+                  </tr>
+                  <tr>
+                    <td><label for="totalComAmt" class="label-width">Total Commitment Amount:</label></td>
+                    <td><input type="text" id="totalComAmt" class="form-control" value="2" readonly/></td>
+                  </tr>
+                  <tr>
+                    <td><label for="unit" class="label-width">Unit:</label></td>
+                    <td><input type="text" id="unit" class="form-control" value="" readonly/></td>
+                  </tr>
+                  <tr>
+                    <td><label for="establish" class="label-width">Establish Date:</label></td>
+                    <td><input type="date" id="establish" class="form-control" value="" readonly /></td>
+                  </tr>
+                  <tr>
+                    <td><label for="drawdown" class="label-width">Drawdown:</label></td>
+                    <td><input type="text" id="drawdown" class="form-control" value="" readonly/></td>
+                  </tr>
+                  <tr>
+                    <td><label for="leaderName" class="label-width">Leader Name:</label></td>
+                    <td><p id="leaderName"></p></td>
+                  </tr>
+                  <tr>
+                    <td><label for="author" class="label-width">Author:</label></td>
+                    <td><p id="author"></p></td>
+                  </tr>
+                  <tr>
+                      <td><label for="notes" class="label-width">Notes:</label></td>
+                      <td><textarea id="notes" rows="10" style="width: 100%;" readonly>KVIC</textarea></td>
+                  </tr>
+
+              </tbody>
+          </table>
+        </div>
+
+      </div>
+      
+      <footer class="main-footer">
+        <div class="pull-right hidden-xs">
+          <b>Version</b> 2.0
+        </div>
+        <strong>Copyright &copy; 2014-2015 <a href="https://yleminvest.com">Ylem Invest</a>.</strong> All rights reserved.
+      </footer>
+
+    </div>
+
+    <!-- jQuery 2.1.3 -->
+    <script src="/static/plugins/jQuery/jQuery-2.1.3.min.js"></script>
+    <!-- Bootstrap 3.3.2 JS -->
+    <script src="/static/bootstrap/js/bootstrap.min.js" type="text/javascript"></script>
+    <!-- FastClick -->
+    <script src='/static/plugins/fastclick/fastclick.min.js'></script>
+    <!-- AdminLTE App -->
+    <script src="/static/dist/js/app.min.js" type="text/javascript"></script>
+    <!-- SlimScroll 1.3.0 -->
+    <script src="/static/plugins/slimScroll/jquery.slimscroll.min.js" type="text/javascript"></script>
+    <script src="https://google-code-prettify.googlecode.com/svn/loader/run_prettify.js"></script>
+    <script>
+      $(document).ready(function() {
+
+        let fundId = localStorage.getItem("PMfundId");
+        $.ajax({
+            url: `/getFund/${fundId}`, // 서버 요청 URL
+            method: 'GET',
+            success: function(response) {
+                if (response.status === 'success') {
+                    console.log(response);
+                    dataMapping(response.data);
+                } else {
+                    console.error('투자 정보 가져오기 실패:', response.message);
+                }
+            },
+            error: function(xhr, error, code) {
+                console.error('서버 요청 실패:', error);
+            }
+        });
+
+        $('#closeButton').click(function() {
+          window.history.back();
+        });
+
+        function handleUserSelection(row, selectedId, selectedName) {
+            $("#searchModal").modal("hide");
+            row.find('#selectUserBtn').remove(); 
+            const inputField = `<p data-id="${selectedId}">${selectedName}</p>`;
+            row.find('td:first-child').append(inputField);
+        }
+        
+        function dataMapping(info) {
+          const fundData = info;
+
+          $('#transactionId').text(fundData._id); // ID 수정
+          $('#country').val(fundData.country); // 통화 수정
+          $('#currency').val(fundData.currency); // 통화 수정
+          $('#fundId').text(fundData.fund_id); // 펀드 ID 수정
+          $('#fundName').text(fundData.fundName); // 펀드 이름 수정
+          $('#notes').val(fundData.notes); // 노트 수정
+          $('#GP_commit').val(fundData.GP_commit); // GP Commit 수정
+          $('#IRR').val(fundData.IRR); // IRR 수정
+          $('#carry').val(fundData.carry); // Carry 수정
+          $('#mgt_fee').val(fundData.mgt_fee); // 관리 수수료 수정
+          $('#totalComAmt').val(fundData.totalComAmt); // 총 약정 금액 수정
+          $('#unit').val(fundData.unit); // 단위 수정
+          $('#establish').val(fundData.establish); // 설립일 수정
+          $('#drawdown').val(fundData.drawdown); // 인출 수정
+          $('#leaderName').text(fundData.leaderName); // 리더 이름 수정
+          $('#author').text(fundData.author); // 저자 수정
+        };
+
+      });
+  </script>
+  </body>
+</html>

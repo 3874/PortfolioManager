@@ -193,50 +193,17 @@
       <div class="content-wrapper">
         <section class="content-header">
           <h1>
-            My Info
+            Dashboard
             <small>Portfolio</small>
           </h1>
           <ol class="breadcrumb">
             <li><a href="#"><i class="fa fa-dashboard"></i> Home</a></li>
-            <li class="active">My Info</li>
+            <li class="active">Dashboard</li>
           </ol>
         </section>
 
         <section class="content">
           <div class="row">
-            <div class="col-md-12">
-              <div class="box box-danger">
-                <div class="box-header">
-                  <h3 class="box-title">My Profile</h3>
-                </div>
-                <div class="box-body">
-                  <form role="form" id="UserForm">
-                    <input type="hidden" id="main_profileId" value="">
-                    <div class="form-group">
-                      <label for="main_profile_ID">User ID</label>
-                      <input type="text" class="form-control" id="main_profile_ID" placeholder="Enter user ID" readonly>
-                    </div>
-                    <div class="form-group">
-                        <label for="main_profile_name">Name</label>
-                        <input type="text" class="form-control" id="main_profile_name" placeholder="Enter name" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="main_profile_hire_date">Hire Date</label>
-                        <input type="date" class="form-control" id="main_profile_hire_date" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="main_profile_position">Position</label>
-                        <input type="text" class="form-control" id="main_profile_position" placeholder="Enter position" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="main_profile_role">Role</label>
-                        <input type="text" class="form-control" id="main_profile_role" readonly>
-                    </div>
-                  </form>
-                </div>
-              </div>
-            </div>
-
             <div class="col-md-12">
               <div class="box box-info">
                 <div class="box-header">
@@ -313,7 +280,7 @@
 
           const investTable = $('#investTable').DataTable({
               ajax: {
-                  url: `/getInvestmentsByUser/${profileId}`, 
+                  url: `/getInvestments`, 
                   method: 'GET',
                   dataSrc: function (json) {
                       if (json.status === 'success') {
@@ -343,7 +310,7 @@
 
           const fundTable = $('#fundTable').DataTable({
               ajax: {
-                  url: `/getFundsByUser/${profileId}`, 
+                  url: `/getFunds`, 
                   method: 'GET',
                   dataSrc: function (json) {
                       if (json.status === 'success') {

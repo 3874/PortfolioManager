@@ -13,6 +13,7 @@ $(document).ready(function() {
         success: function(response) {
             console.log(response);
             profileInfo = response.data;
+            profile_Info = profileInfo;
             ProfileModal();
             profileDataMapping(profileInfo);
         },
@@ -29,10 +30,11 @@ $(document).ready(function() {
             type: 'POST', // POST 메서드 사용
             success: function(response) {
                 if (response.status === 'success') {
-                    alert('Logged out successfully!'); // 성공 메시지
-                    window.location.href = '/'; // 페이지 새로 고침
+                    alert('Logged out successfully!');
+                    window.location.href = '/signin'; 
                 } else {
-                    alert('Error logging out: ' + response.message); // 에러 메시지
+                    alert('Error logging out: ' + response.message); 
+                    window.location.href = '/signin';
                 }
             },
             error: function(xhr, status, error) {
@@ -141,21 +143,30 @@ $(document).ready(function() {
         $('#profilename3').text(info.name); 
         $('#profilerole').text(info.role);
         $('#profiledate').text(info.createdAt.substring(0, 10));  
-    }
 
-    function getUserId() {
-        const userId = localStorage.getItem('portfolio_user_id');
-        const expirationTime = localStorage.getItem('portfolio_user_id_expiration');
-    
-        // 만료 시간이 설정되어 있고, 현재 시간이 만료 시간보다 크면
-        if (expirationTime && Date.now() > expirationTime) {
-            // 만료된 경우 localStorage에서 삭제
-            localStorage.removeItem('portfolio_user_id');
-            localStorage.removeItem('portfolio_user_id_expiration');
-            return null; // 만료된 경우 null 반환
-        }
-    
-        return userId; // 만료되지 않은 경우 사용자 ID 반환
+        //Main
+        $('#main_profileId').val(info._id); 
+        $('#main_profile_ID').val(info.ID); 
+        $('#main_profile_name').val(info.name); // 사용자 이름
+        $('#main_profile_hire_date').val(info.hire_date); // 고용 날짜
+        $('#main_profile_position').val(info.position); // 직위
+        $('#main_profile_role').val(info.role); // 역할
+
     }
     
 });
+
+function getUserId() {
+    const userId = localStorage.getItem('portfolio_user_id');
+    const expirationTime = localStorage.getItem('portfolio_user_id_expiration');
+
+    // 만료 시간이 설정되어 있고, 현재 시간이 만료 시간보다 크면
+    if (expirationTime && Date.now() > expirationTime) {
+        // 만료된 경우 localStorage에서 삭제
+        localStorage.removeItem('portfolio_user_id');
+        localStorage.removeItem('portfolio_user_id_expiration');
+        return null; // 만료된 경우 null 반환
+    }
+
+    return userId; // 만료되지 않은 경우 사용자 ID 반환
+}

@@ -207,7 +207,7 @@
             <li class="header">Additional</li>
             <li><a href="/securities"><i class="fa fa-circle-o text-danger"></i> Securities</a></li>
             <li><a href="/authTable"><i class="fa fa-circle-o text-warning"></i> Auth Table</a></li>
-            <li><a href="/advSearch"><i class="fa fa-circle-o text-info"></i> Advanced Search</a></li>
+            <li><a href="/dashboard"><i class="fa fa-circle-o text-info"></i> Dashboard</a></li>
           </ul>
         </section>
         <!-- /.sidebar -->
@@ -328,7 +328,6 @@
         pageLength: 50
       });
 
-      // View 버튼 클릭 시 모달 표시
       $('#transactionsTable tbody').on('click', 'tr', function() {
           const data = table.row(this).data();
           const transactionId = data._id;
@@ -347,12 +346,11 @@
               }
           });
       });
-      // 모달 닫기
+     
       $('#closeModalBtn').on('click', function() {
           $('#transactionModal').modal('hide');
       });
 
-      // Transaction 삭제
       $('#deleteTransactionBtn').on('click', function() {
         alert('No');
         return;
