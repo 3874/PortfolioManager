@@ -12,6 +12,8 @@ from bson import ObjectId
 with open('setting/config.json', 'r') as config_file:
     config = json.load(config_file)
 
+print (config)
+
 app = Flask(__name__)
 app.secret_key = config['SECRET_KEY']  # Change this in production!
 app.config.update(
@@ -33,6 +35,7 @@ users_collection = db['users']
 funds_collection = db['funds']
 companies_collection = db['companies']
 transactions_collection = db['transactions']
+investments_collection = db['investments']
 contributions_collection = db['contributions']
 
 # Decorators
@@ -361,9 +364,9 @@ def delete_company(company_id):
         return jsonify({'status': 'error', 'message': 'Invalid ID format'}), 400
 
 # Transaction Routes
-@app.route('/addTransaction', methods=['POST'])
+@app.route('/addInvestment', methods=['POST'])
 @login_required
-def add_transaction():
+def add_investment():
     try:
         data = request.json
         
@@ -375,8 +378,8 @@ def add_transaction():
             'trs_type': data['trs_type'],
             'security_type': data['security_type'],
             'currency': data['currency'],
-            'unit': data['unit'],
             'prevalue': data['prevalue'],
+            'offering': data['offering'],
             'amount': float(data['amount']),  # 금액을 float으로 변환
             'trs_date': datetime.strptime(data['trs_date'], '%Y-%m-%d'),  # 날짜 형식 변환
             'notes': data.get('notes', ''), 
@@ -387,7 +390,7 @@ def add_transaction():
             'updatedAt': datetime.now()
         }
         
-        transactions_collection.insert_one(transaction)
+        investments_collection.insert_one(transaction)
         return jsonify({'status': 'success', 'message': 'Transaction added'})
     
     except InvalidId:
@@ -397,9 +400,9 @@ def add_transaction():
     except Exception as e:
         return jsonify({'status': 'error', 'message': str(e)}), 500
 
-@app.route('/updateTransaction', methods=['PUT'])
+@app.route('/updateInvestment', methods=['PUT'])
 @login_required
-def update_transaction():
+def update_investment():
     try:
         data = request.json
         updates = {}
@@ -419,10 +422,10 @@ def update_transaction():
             updates['security_type'] = data['security_type']
         if 'currency' in data:
             updates['currency'] = data['currency']
+        if 'offering' in data:
+            updates['offering'] = data['offering']
         if 'prevalue' in data:
             updates['prevalue'] = data['prevalue']
-        if 'unit' in data:
-            updates['unit'] = data['unit']
         if 'amount' in data:
             updates['amount'] = float(data['amount'])  # 금액은 float으로 변환
         if 'trs_date' in data:
@@ -430,10 +433,14 @@ def update_transaction():
         if 'notes' in data:
             updates['notes'] = data['notes']
         if 'terms' in data:
-            updates['terms'] = data['terms']  # terms 업데이트
+            updates['terms'] = data['terms']
+        if 'contributors' in data:
+            updates['contributors'] = data['contributors']
+        if 'transactions' in data:
+            updates['transactions'] = data['transactions']
 
         updates['updatedAt'] = datetime.now()
-        result = transactions_collection.update_one(
+        result = investments_collection.update_one(
             {'_id': ObjectId(data['_id'])},
             {'$set': updates}
         )
@@ -443,12 +450,12 @@ def update_transaction():
     except (InvalidId, ValueError) as e:
         return jsonify({'status': 'error', 'message': str(e)}), 400
     
-@app.route('/getTransactionByUser/<user_id>', methods=['GET'])
+@app.route('/getInvestmentByUser/<user_id>', methods=['GET'])
 @login_required
-def get_transaction_by_user(user_id):
+def get_investment_by_user(user_id):
     try:
         # fund_id에 해당하는 모든 트랜잭션을 조회합니다.
-        transactions = list(transactions_collection.find({'user_id': user_id}))
+        transactions = list(investments_collection.find({'user_id': user_id}))
 
         # target_id별로 트랜잭션을 그룹핑할 딕셔너리 생성
         grouped_transactions = {}
@@ -471,7 +478,6 @@ def get_transaction_by_user(user_id):
                 grouped_transactions[target_id] = {
                     'target': transaction['target'],
                     'target_id': transaction['target_id'],
-                    'unit': transaction['unit'],
                     'currency': transaction['currency'],
                     'transactions': [],
                     'total_buy': 0,   # buy한 총금액 초기화
@@ -491,7 +497,6 @@ def get_transaction_by_user(user_id):
                 # 기타 유형의 경우 별도 처리 가능 (현재는 buy로 처리)
                 grouped_transactions[target_id]['total_buy'] += amount
 
-        # 각 그룹별로 xirr 함수를 이용해 IRR 계산
         for group in grouped_transactions.values():
             cashflows = []
             # 거래일 기준으로 정렬 (필요시)
@@ -528,17 +533,17 @@ def get_transaction_by_user(user_id):
     except Exception as e:
         return jsonify({'status': 'error', 'message': str(e)}), 500
 
-@app.route('/getTransactionByFund/<fund_id>', methods=['GET'])
+@app.route('/getInvestmentByFund/<fund_id>', methods=['GET'])
 @login_required
-def get_transaction_by_fund(fund_id):
+def get_investment_by_fund(fund_id):
     try:
         # fund_id에 해당하는 모든 트랜잭션을 조회합니다.
-        transactions = list(transactions_collection.find({'fund_id': fund_id}))
+        investments = list(investments_collection.find({'fund_id': fund_id}))
 
         # target_id별로 트랜잭션을 그룹핑할 딕셔너리 생성
         grouped_transactions = {}
 
-        for transaction in transactions:
+        for transaction in investments:
             # ObjectId를 문자열로 변환
             transaction['_id'] = str(transaction['_id'])
 
@@ -556,7 +561,6 @@ def get_transaction_by_fund(fund_id):
                 grouped_transactions[target_id] = {
                     'target': transaction['target'],
                     'target_id': transaction['target_id'],
-                    'unit': transaction['unit'],
                     'currency': transaction['currency'],
                     'transactions': [],
                     'total_buy': 0,   # buy한 총금액 초기화
@@ -576,14 +580,12 @@ def get_transaction_by_fund(fund_id):
                 # 기타 유형의 경우 별도 처리 가능 (현재는 buy로 처리)
                 grouped_transactions[target_id]['total_buy'] += amount
 
-        # 각 그룹별로 xirr 함수를 이용해 IRR 계산
         for group in grouped_transactions.values():
             cashflows = []
             # 거래일 기준으로 정렬 (필요시)
             group['transactions'].sort(key=lambda x: x['trs_date'])
             for txn in group['transactions']:
-                # trs_type에 따라 현금흐름 부호 결정:
-                # 'buy'이면 투자이므로 음수, 'sell'이면 회수이므로 양수로 처리
+
                 amount = txn.get('amount', 0)
                 if txn.get('trs_type', '').lower() == 'buy':
                     cashflow = -amount
@@ -613,11 +615,11 @@ def get_transaction_by_fund(fund_id):
     except Exception as e:
         return jsonify({'status': 'error', 'message': str(e)}), 500
 
-@app.route('/getTransaction/<transaction_id>', methods=['GET'])
+@app.route('/getInvestment/<investment_id>', methods=['GET'])
 @login_required
-def get_transaction(transaction_id):
+def get_investment(investment_id):
     try:
-        transaction = transactions_collection.find_one({'_id': ObjectId(transaction_id)})
+        transaction = investments_collection.find_one({'_id': ObjectId(investment_id)})
         if not transaction:
             return jsonify({'status': 'error', 'message': 'Transaction not found'}), 404
         transaction['_id'] = str(transaction['_id']) 
@@ -631,39 +633,39 @@ def get_transaction(transaction_id):
     except InvalidId:
         return jsonify({'status': 'error', 'message': 'Invalid ID format'}), 400
 
-@app.route('/getTransactions', methods=['GET'])
+@app.route('/getInvestments', methods=['GET'])
 @login_required
-def get_transactions():
-    if not check_access_level('transactions', session['user_id']):
+def get_investments():
+    if not check_access_level('investments', session['user_id']):
         return jsonify({'status': 'error', 'data': 'no authority'}), 403
 
     try:
-        transactions = list(transactions_collection.find())
+        investments = list(investments_collection.find())
     except Exception as e:
         return jsonify({'status': 'error', 'data': str(e)}), 500  # 데이터베이스 오류 처리
 
-    for transaction in transactions:
-        transaction['_id'] = str(transaction['_id'])
+    for investment in investments:
+        investment['_id'] = str(investment['_id'])
         
         try:
-            target_company = companies_collection.find_one({'_id': ObjectId(transaction['target_id'])})
-            transaction['target'] = target_company['companyName'] if target_company else 'Unknown'
+            target_company = companies_collection.find_one({'_id': ObjectId(investment['target_id'])})
+            investment['target'] = target_company['companyName'] if target_company else 'Unknown'
         except Exception as e:
-            transaction['target'] = 'Error retrieving target'  # 오류 발생 시 기본값 설정
+            investment['target'] = 'No Target'  
         
         try:
-            fund = funds_collection.find_one({'_id': ObjectId(transaction['fund_id'])})
-            transaction['fundName'] = fund['fundName'] if fund else 'Unknown'
+            fund = funds_collection.find_one({'_id': ObjectId(investment['fund_id'])})
+            investment['fundName'] = fund['fundName'] if fund else 'Unknown'
         except Exception as e:
-            transaction['fundName'] = 'Error retrieving fund'  # 오류 발생 시 기본값 설정
+            investment['fundName'] = 'No Fund' 
     
-    return jsonify({'status': 'success', 'data': transactions})
+    return jsonify({'status': 'success', 'data': investments})
 
-@app.route('/deleteTransaction/<transaction_id>', methods=['DELETE'])
+@app.route('/deleteInvestment/<investment_id>', methods=['DELETE'])
 @login_required
-def delete_transaction(transaction_id):
+def delete_investment(investment_id):
     try:
-        result = transactions_collection.delete_one({'_id': ObjectId(transaction_id)})
+        result = investments_collection.delete_one({'_id': ObjectId(investment_id)})
         if result.deleted_count == 0:
             return jsonify({'status': 'error', 'message': 'Transaction not found'}), 404
         return jsonify({'status': 'success', 'message': 'Transaction deleted'})
@@ -763,7 +765,9 @@ def get_fund(fund_id):
         fund = funds_collection.find_one({'_id': ObjectId(fund_id)})
         if not fund:
             return jsonify({'status': 'error', 'message': 'Fund not found'}), 404
-        fund['_id'] = str(fund['_id'])  # ObjectId를 문자열로 변환
+        fund['_id'] = str(fund['_id'])
+        user = users_collection.find_one({'_id': ObjectId(fund['leader'])})
+        fund['leaderName'] = user['name'] if user else ''
         return jsonify({'status': 'success', 'data': fund})
     except InvalidId:
         return jsonify({'status': 'error', 'message': 'Invalid ID format'}), 400
@@ -803,7 +807,7 @@ def search_fund():
 
     funds = list(funds_collection.find({
         'fundName': {'$regex': search_query, '$options': 'i'}
-    }, {'_id': 1, 'fundName': 1}))
+    }, {'_id': 1, 'fundName': 1, 'currency': 1}))
 
     for fund in funds:
         fund['_id'] = str(fund['_id']) 
@@ -1017,8 +1021,8 @@ def get_contributions():
         for contribution in contributions:
             contribution['_id'] = str(contribution['_id'])  # ObjectId를 문자열로 변환
             
-            # trans_id를 사용하여 transactions_collection에서 trans_name 찾기
-            transaction = transactions_collection.find_one({'_id': ObjectId(contribution['trans_id'])})
+            # trans_id를 사용하여 investments_collection에서 trans_name 찾기
+            transaction = investments_collection.find_one({'_id': ObjectId(contribution['trans_id'])})
             contribution['target_id'] = transaction['target_id'] if transaction else 'Unknown' 
             contribution['security_type'] = transaction['security_type'] if transaction else 'Unknown'
             contribution['fund_id'] = transaction['fund_id'] if transaction else 'Unknown'

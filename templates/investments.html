@@ -182,8 +182,8 @@
           <ul class="sidebar-menu">
             <li class="header">MAIN</li>
             <li class="active">
-              <a href="/transactions">
-                <i class="fa fa-book"></i> <span>Transactions</span> 
+              <a href="/investments">
+                <i class="fa fa-book"></i> <span>Investments</span> 
               </a>
             </li>
             <li>
@@ -217,11 +217,11 @@
       <div class="content-wrapper">
         <!-- Content Header (Page header) -->
         <section class="content-header">
-          <h1 style="display: inline-block;">Transactions</h1>
-          <small><a href="/transaction_add" class="btn btn-warning btn-sm" style="margin-left: 20px; display: inline-block;">Add</a></small>
+          <h1 style="display: inline-block;">Investments</h1>
+          <small><a href="/investment_add" class="btn btn-warning btn-sm" style="margin-left: 20px; display: inline-block;">Add Investment</a></small>
           <ol class="breadcrumb">
             <li><a href="/"><i class="fa fa-dashboard"></i> Home</a></li>
-            <li class="active">Transactions</li>
+            <li class="active">Investments</li>
           </ol>
         </section>
 
@@ -242,10 +242,11 @@
                         <th>Target</th>
                         <th>Type</th>
                         <th>Security</th>
+                        <th>Offering</th>
                         <th>Currency</th>
-                        <th>Unit</th>
                         <th>Pre. Value</th>
                         <th>Amount</th>
+                        <th>Shares</th>
                         <th>Date</th>
                       </tr>
                     </thead>
@@ -286,7 +287,7 @@
       // DataTable 초기화
       const table = $('#transactionsTable').DataTable({
         ajax: {
-            url: '/getTransactions',
+            url: '/getInvestments',
             error: function(xhr, error, code) {
                 window.location.href = '/';
             }
@@ -295,10 +296,10 @@
             { data: '_id', visible: false },
             { data: 'target_id', visible: false },
             { data: 'target'},
-            { data: 'trs_type' },
+            { data: 'trs_type', visible: false },
             { data: 'security_type' },
+            { data: 'offering' },
             { data: 'currency' },
-            { data: 'unit' },
             { data: 'prevalue', 
               render: function(data, type, row) {
                     return data.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
@@ -307,6 +308,18 @@
             { data: 'amount',
               render: function(data, type, row) {
                   return data.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+              }
+            },
+            { data: 'pct',
+              render: function(data, type, row) {
+                  const amount = parseFloat(row.amount) || 0; // amount를 숫자로 변환
+                  const prevalue = parseFloat(row.prevalue) || 0; // prevalue를 숫자로 변환
+                  
+                  if (row.offering === 'primary') {
+                      return ((amount / (amount + prevalue)) * 100).toFixed(1) + '%'; // primary일 때 계산
+                  } else {
+                      return ((amount / prevalue) * 100).toFixed(1) + '%'; // secondary일 때 계산
+                  } 
               }
             },
             { data: 'trs_date', visible: false  },
@@ -320,15 +333,14 @@
           const data = table.row(this).data();
           const transactionId = data._id;
 
-          // transactionId로 /getTransaction API 호출
           $.ajax({
-              url: `/getTransaction/${transactionId}`,
+              url: `/getInvestment/${transactionId}`,
               method: 'GET',
               success: function(response) {
                   // API 응답 데이터를 사용하여 모달에 세부 정보 표시
                   console.log(response);
-                  localStorage.setItem('transactionData', JSON.stringify(response.data)); // 데이터 저장
-                  window.location.href ='/transaction'; 
+                  localStorage.setItem('investmentData', JSON.stringify(response.data)); // 데이터 저장
+                  window.location.href ='/investment'; 
               },
               error: function() {
                   alert('Failed to load transaction details');
@@ -346,7 +358,7 @@
         return;
         const transactionId = $('#transactionDetails').text().split(',')[0].split(': ')[1];
         $.ajax({
-            url: `/deleteTransaction/${transactionId}`,
+            url: `/deleteInvestment/${transactionId}`,
             method: 'DELETE',
             success: function() {
                 alert('Transaction deleted successfully');

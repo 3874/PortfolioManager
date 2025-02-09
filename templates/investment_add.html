@@ -22,7 +22,7 @@
       <header class="main-header">
 
         <nav class="navbar navbar-static-top" role="navigation">
-            <a href="/" class="logo"><b>Add</b>Transaction</a>
+            <a href="/" class="logo"><b>Investment</b>Terms</a>
 
           <div class="navbar-custom-menu" style="display: flex; align-items: center; height: 100%; padding-top: 10px;"> <!-- 상단 여백 추가 -->
             <ul class="nav navbar-nav" style="display: flex; justify-content: center; margin: auto;">
@@ -64,52 +64,37 @@
                     (<small id="fundId"></small>)</td>
                 </tr>
                 <tr>
-                  <td><label for="trsType" class="label-width">Transaction Type:</label></td>
+                  <td><label for="securityType" class="label-width">Security Type:</label></td>
                   <td>
-                    <select id="trsType" class="form-control">
-                      <option value="buy" selected>Buy</option>
-                      <option value="sell">Sell</option>
-                      <option value="redeem">Redeem</option>
-                      <option value="interest">Interest</option>
-                      <option value="convert">Convert</option>
-                      <option value="warrant">Exercise Warrants</option>
+                    <select id="securityType" class="form-control">
+                      <option value="cs">Common Stock</option>
+                      <option value="cps">CPS</option>
+                      <option value="rcps">RCPS</option>
+                      <option value="rps">RPS</option>
+                      <option value="pps">PPS</option>
+                      <option value="cb">CB</option>
+                      <option value="cn">CN</option>
+                      <option value="bw">BW</option>
+                      <option value="eb">EB</option>
+                      <option value="safe">SAFE</option>
+                      <option value="kiss">KISS</option>
+                      <option value="rbf" selected>RBF</option>
+                      <option value="psa">PSA</option>
                     </select>
                   </td>
                 </tr>
                 <tr>
-                  <td><label for="securityType" class="label-width">Security Type:</label></td>
+                  <td><label for="offering" class="label-width">Offering:</label></td>
                   <td>
-                    <select id="securityType" class="form-control">
-                      <option value="cs" selected>Common Stock</option>
-                      <option value="cps">Convertible Preferred Stock</option>
-                      <option value="rcps">RCPS</option>
-                      <option value="cb">Convertible Bond</option>
-                      <option value="bw">Bond with Warrant</option>
-                      <option value="eb">Exchangeable Bond</option>
+                    <select id="offering" class="form-control">
+                      <option value="primary" selected>Primary</option>
+                      <option value="secondary">Secondary</option>
                     </select>
                   </td>
                 </tr>
                 <tr>
                   <td><label for="currency" class="label-width">Currency:</label></td>
-                  <td>
-                    <select id="currency" class="form-control">
-                      <option value="KRW" selected>KRW</option>
-                      <option value="USD">USD</option>
-                      <option value="EUR">EUR</option>
-                      <option value="JPY">JPY</option>
-                      <option value="CNY">CNY</option>
-                    </select>
-                  </td>
-                </tr>
-                <tr>
-                  <td><label for="unit" class="label-width">Unit:</label></td>
-                  <td><select id="unit" class="form-control">
-                    <option value="one" selected>One</option>
-                    <option value="thousand">Thousand</option>
-                    <option value="million">Million</option>
-                    <option value="billion">Billion</option>
-                    <option value="trillion">Trillion</option>
-                  </select></td>
+                  <td><input type="text" id="currency" class="form-control" readonly></td>
                 </tr>
                 <tr>
                   <td><label for="amount" class="label-width">Amount:</label></td>
@@ -125,7 +110,6 @@
                 </tr>
                 <tr>
                   <td><label for="terms" class="label-width">Terms:</label>
-                    <button id="addTermBtn" class="btn btn-success btn-sm" style="margin-left: 10px;">+</button>
                   </td>
                   <td colspan="3">
                       <table id="termsGrid" class="table table-bordered">
@@ -142,7 +126,7 @@
                       
                   </td>
                 </tr>
-                <tr id="contributorsRow">
+                <tr>
                   <td><label for="contributors" class="label-width">Contributors:</label>
                     <button id="addContributorBtn" class="btn btn-success btn-sm" style="margin-left: 10px;">+</button>
                   </td>
@@ -219,6 +203,7 @@
       let securitiesData = [];
       $(document).ready(function() {
         let searchMode = '';
+        let transactionType = 'buy';
 
         $.ajax({
             url: '/getSecurities',
@@ -235,16 +220,9 @@
             }
         });
 
-        $('#trsType, #securityType').change(function() {
-            const selectedTrsType = $('#trsType').val();
+        $('#securityType').change(function() {
+            const selectedTrsType = transactionType;
             const selectedSecurityType = $('#securityType').val();
-
-            // contributors 표시/숨김 처리
-            if (selectedTrsType === 'buy') {
-                $('#contributorsRow').css('display', 'table-row');
-            } else {
-                $('#contributorsRow').css('display', 'none');
-            }
 
             // terms 초기화
             $('#termsBody').empty();
@@ -263,33 +241,13 @@
                         <tr>
                             <td><input type="text" class="form-control" value="${key}" readonly></td>
                             <td><input type="text" class="form-control" value="${terms[key]}"></td>
-                            <td><button class="btn btn-danger btn-sm removeTermBtn">-</button></td>
                         </tr>
                     `);
                 }
             }
         });
 
-        $('#addTermBtn').click(function() {
-            $('#termsBody').append(`
-                <tr>
-                    <td><input type="text" class="form-control" placeholder="Enter key"></td>
-                    <td><input type="text" class="form-control" placeholder="Enter value"></td>
-                    <td><button class="btn btn-danger btn-sm removeTermBtn">-</button></td>
-                </tr>
-            `);
-        });
 
-        $(document).ready(function() {
-            const initialTrsType = $('#trsType').val();
-            if (initialTrsType !== 'buy') {
-                $('#contributorsRow').css('display', 'none'); // 또는 위의 다른 방법 사용
-            }
-        });
-
-        $(document).on('click', '.removeTermBtn', function() {
-            $(this).closest('tr').remove(); // 해당 행 삭제
-        });
 
         $('#addContributorBtn').click(function() {
             $('#contributorBody').append(`
@@ -315,6 +273,7 @@
             if (searchMode == 'fund') {
                 $('#fundId').text(selectedId);
                 $('#fundName').text(selectedName);
+                $('#currency').val($(this).data('currency'));
               } else if (searchMode == 'counterparty') {
                 $('#counterpartyId').text(selectedId);
                 $('#counterparty').text(selectedName);
@@ -330,12 +289,12 @@
               fund_id: $('#fundId').text(),
               counterparty_id: $('#counterpartyId').text(),
               target_id: $('#targetId').text(),
-              trs_type: $('#trsType').val(),
+              trs_type: transactionType,
               security_type: $('#securityType').val(),
               currency: $('#currency').val(),
-              unit: $('#unit').val(),
               prevalue: $('#prevalue').val(),
               amount: $('#amount').val(),
+              offering: $('#offering').val(),
               trs_date: $('#trsDate').val(),
               notes: $('#notes').val(),
               terms: {},
@@ -344,7 +303,7 @@
 
           if (!updatedData.fund_id || !updatedData.counterparty_id || !updatedData.target_id || 
               !updatedData.trs_type || !updatedData.security_type || 
-              !updatedData.currency || !updatedData.unit || !updatedData.prevalue ||
+              !updatedData.currency || !updatedData.prevalue ||
               !updatedData.amount || !updatedData.trs_date) {
               alert('Please fill in all required fields except for Terms and Notes.');
               return; // 필수 값이 없으면 진행하지 않음
@@ -371,14 +330,14 @@
           });
 
           $.ajax({
-              url: `/addTransaction`, // 서버의 업데이트 엔드포인트
+              url: `/addInvestment`, // 서버의 업데이트 엔드포인트
               type: 'POST',
               contentType: 'application/json',
               data: JSON.stringify(updatedData),
               success: function(response) {
                   if (response.status === 'success') {
                       alert('Transaction updated successfully!');
-                      window.location.href = '/transactions';
+                      window.location.href = '/investments';
                   } else {
                       alert('Error updating transaction: ' + response.message);
                   }
@@ -390,7 +349,7 @@
         });
 
         $('#closeButton').click(function() {
-          window.location.href ='/transactions'; 
+          window.location.href ='/investments'; 
         });
 
         $('#selectfundBtn').click(function() {
@@ -450,7 +409,7 @@
                 if (searchMode == 'fund') {
                   response.data.forEach(function(item) {
                     $('#results').append(`
-                      <div style="padding: 5px; cursor: pointer;" class="result-item" data-id="${item._id}">
+                      <div style="padding: 5px; cursor: pointer;" class="result-item" data-currency="${item.currency}" data-id="${item._id}">
                         ${item.fundName}
                       </div>
                     `);

@@ -169,8 +169,8 @@
           <ul class="sidebar-menu">
             <li class="header">MAIN</li>
             <li>
-              <a href="/transactions">
-                <i class="fa fa-book"></i> <span>Transactions</span> 
+              <a href="/investments">
+                <i class="fa fa-book"></i> <span>Investments</span> 
               </a>
             </li>
             <li>
@@ -570,7 +570,7 @@
             $('#transTable thead').html(tableHeader); 
 
             $.ajax({
-                url: `/getTransactionByFund/${fundId}`,  // 서버 엔드포인트
+                url: `/getInvestmentByFund/${fundId}`,  // 서버 엔드포인트
                 method: 'GET',
                 success: function(response) {
                     if (response.status === 'success') {

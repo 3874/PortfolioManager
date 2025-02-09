@@ -181,8 +181,8 @@
           <ul class="sidebar-menu">
             <li class="header">MAIN</li>
             <li>
-              <a href="/transactions">
-                <i class="fa fa-book"></i> <span>Transactions</span> 
+              <a href="/investments">
+                <i class="fa fa-book"></i> <span>Investments</span> 
               </a>
             </li>
             <li>
@@ -332,8 +332,12 @@
                           </select>
                       </div>
                       <div class="form-group">
-                          <label for="leader">Leader ID</label>
-                          <input type="text" class="form-control" id="leader" placeholder="Enter leader ID" required>
+                        <label for="leaderInput">Leader ID</label>
+                        <div class="d-flex" style="display: flex; align-items: center;">
+                            <input type="text" class="form-control" id="leaderInput" placeholder="Enter Leader name" style="flex: 1; margin-right: 10px;">
+                            <select id="leader" class="form-control" required style="flex: 1;" >
+                            </select>
+                        </div>
                       </div>
                       <div class="form-group">
                           <label for="establish">Establishment Date</label>
@@ -450,6 +454,33 @@
         });
       });
 
+      $('#leaderInput').on('keypress', function(e) {
+            if (e.which === 13) { // Enter key pressed
+                e.preventDefault(); // Prevent default form submission
+                
+                const inputValue = $(this).val().trim();
+                $(this).val('');
+                if (inputValue) {
+                    $.ajax({
+                        url: `/searchUser?query=${inputValue}`,
+                        method: 'GET',
+                        success: function(response) {
+                            console.log(response);
+                            let info = response.data;
+                            $('#leader').empty().append('<option value="">Select a user</option>');
+
+                            info.forEach(function(user) {
+                                $('#leader').append(`<option value="${user._id}">${user.name}</option>`);
+                            });
+                        },
+                        error: function(error) {
+                            console.error('Error fetching users:', error);
+                        }
+                    });
+                }
+            }
+        });
+
       $('#saveFundBtn').click(function() {
         const fundData = {
           fundName: $('#fundName').val(),
@@ -538,11 +569,15 @@
         $('#currency').val(info.currency); 
         $('#unit').val(info.unit); 
         $('#establish').val(info.establish); 
+        $('#leader').val(info.leader); 
         $('#IRR').val(info.IRR); 
         $('#carry').val(info.carry);
         $('#notes').val(info.notes);
-        $('#leader').val(info.leader);
+        $('#leaderInput').val(info.leaderName);
+        $('#leader').empty().append(`<option value="${info.leader}">${info.leaderName}</option>`);
       }
+
+
   });
 </script>
 
