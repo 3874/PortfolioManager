@@ -360,7 +360,7 @@
               tableBody.append(row);
             });
           }
-
+          console.log(investmentData.transactions);
           let cashFlow = makeCashFlow($('#trsDate').val(), $('#amount').val(), investmentData.transactions);
           let lastirr = calculateIRR(cashFlow) * 100; 
 
@@ -375,10 +375,12 @@
             amount: -Math.abs(Number(amount))
           };
           
-          const transactionArray = transactions.map(item => ({
-            date: item.date,
-            amount: Number(item.amount)
-          }));
+          const transactionArray = transactions
+            .filter(item => ['sell', 'dividend', 'redeem', 'interest', 'capReduct'].includes(item.transaction_type)) 
+            .map(item => ({
+              date: item.date,
+              amount: Number(item.amount)
+            }));
           
           const filteredArray = [initialInvestment, ...transactionArray];
           filteredArray.sort((a, b) => new Date(a.date) - new Date(b.date));
