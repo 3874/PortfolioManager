@@ -153,6 +153,10 @@
                     </td>
                   </tr>
                   <tr>
+                    <td><label for="irr" class="label-width">IRR:</label></td>
+                    <td><p id="irr"></p></td>
+                  </tr>
+                  <tr>
                       <td><label for="notes" class="label-width">Notes:</label></td>
                       <td><textarea id="notes" rows="10" style="width: 100%;" readonly></textarea></td>
                   </tr>
@@ -257,7 +261,6 @@
             method: 'GET',
             success: function(response) {
                 if (response.status === 'success') {
-                  console.log(response);
                   dataMapping(response.data);
                 } else {
                   console.error('투자 정보 가져오기 실패:', response.message);
@@ -295,6 +298,7 @@
         }
         
         function dataMapping(info) {
+          let calIrr;
           const investmentData = info;
           const tableBody = $('#transactionTable tbody');
           tableBody.empty();
@@ -351,14 +355,37 @@
                   <td>${transaction.no_of_share.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
                   <td>${transaction.price_per_share.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
                   <td>${transaction.amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</td>
-
                 </tr>
               `;
               tableBody.append(row);
             });
           }
 
+          let cashFlow = makeCashFlow($('#trsDate').val(), $('#amount').val(), investmentData.transactions);
+          console.log(cashFlow);
+          //calculateIrr();
+          $('#irr').text('10%');
+
         };
+
+        function makeCashFlow(trsDate, amount, transactions) {
+
+          const initialInvestment = {
+            date: trsDate,
+            amount: -Math.abs(Number(amount))
+          };
+          
+          const transactionArray = transactions.map(item => ({
+            date: item.date,
+            amount: Number(item.amount)
+          }));
+          
+          const filteredArray = [initialInvestment, ...transactionArray];
+          filteredArray.sort((a, b) => new Date(a.date) - new Date(b.date));
+          
+          return filteredArray;
+        }
+
 
       });
   </script>

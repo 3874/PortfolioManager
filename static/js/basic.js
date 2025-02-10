@@ -144,14 +144,6 @@ $(document).ready(function() {
         $('#profilerole').text(info.role);
         $('#profiledate').text(info.createdAt.substring(0, 10));  
 
-        //Main
-        $('#main_profileId').val(info._id); 
-        $('#main_profile_ID').val(info.ID); 
-        $('#main_profile_name').val(info.name); // 사용자 이름
-        $('#main_profile_hire_date').val(info.hire_date); // 고용 날짜
-        $('#main_profile_position').val(info.position); // 직위
-        $('#main_profile_role').val(info.role); // 역할
-
     }
     
 });
