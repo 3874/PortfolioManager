@@ -363,12 +363,8 @@
 
           let cashFlow = makeCashFlow($('#trsDate').val(), $('#amount').val(), investmentData.transactions);
           let lastirr = calculateIRR(cashFlow) * 100; 
-          if (lastirr) {
-            $('#irr').text(lastirr.toFixed(2)+'%');
-          } else {
-            $('#irr').text('Not Yet');
-          }
 
+          $('#irr').text(lastirr.toFixed(2)+'%');
 
         };
 
