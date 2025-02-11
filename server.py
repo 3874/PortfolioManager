@@ -472,85 +472,22 @@ def get_investments_by_user(user_id):
     except InvalidId:
         return jsonify({'status': 'error', 'message': 'Invalid ID format'}), 400
 
-@app.route('/getInvestmentByFund/<fund_id>', methods=['GET'])
+@app.route('/getInvestmentsByFund/<fund_id>', methods=['GET'])
 @login_required
-def get_investment_by_fund(fund_id):
+def get_investments_by_fund(fund_id):
     try:
-        # fund_id에 해당하는 모든 트랜잭션을 조회합니다.
+
         investments = list(investments_collection.find({'fund_id': fund_id}))
+        
+        for investment in investments:
+            investment['_id'] = str(investment['_id'])
+            if 'target_id' in investment:
+                company = companies_collection.find_one({'_id': ObjectId(investment['target_id'])})
+                investment['target'] = company['companyName'] if company else 'Unknown'
 
-        # target_id별로 트랜잭션을 그룹핑할 딕셔너리 생성
-        grouped_transactions = {}
-
-        for transaction in investments:
-            # ObjectId를 문자열로 변환
-            transaction['_id'] = str(transaction['_id'])
-
-            # 만약 trs_date가 문자열이라면 datetime 객체로 변환 (예시)
-            if isinstance(transaction.get('trs_date'), str):
-                transaction['trs_date'] = datetime.fromisoformat(transaction['trs_date'])
-
-            # target_id에 해당하는 회사 이름 조회
-            target_company = companies_collection.find_one({'_id': ObjectId(transaction['target_id'])})
-            transaction['target'] = target_company['companyName'] if target_company else 'Unknown'
-
-            # 그룹핑: 동일 target_id의 거래들을 모음
-            target_id = transaction['target_id']
-            if target_id not in grouped_transactions:
-                grouped_transactions[target_id] = {
-                    'target': transaction['target'],
-                    'target_id': transaction['target_id'],
-                    'currency': transaction['currency'],
-                    'transactions': [],
-                    'total_buy': 0,   # buy한 총금액 초기화
-                    'total_sell': 0   # sell한 총금액 초기화
-                }
-            
-            # 트랜잭션을 해당 그룹에 추가
-            grouped_transactions[target_id]['transactions'].append(transaction)
-            
-            # trs_type에 따라 각 그룹의 총금액 갱신
-            amount = transaction.get('amount', 0)
-            if transaction.get('trs_type', '').lower() == 'buy':
-                grouped_transactions[target_id]['total_buy'] += amount
-            elif transaction.get('trs_type', '').lower() == 'sell':
-                grouped_transactions[target_id]['total_sell'] += amount
-            else:
-                # 기타 유형의 경우 별도 처리 가능 (현재는 buy로 처리)
-                grouped_transactions[target_id]['total_buy'] += amount
-
-        for group in grouped_transactions.values():
-            cashflows = []
-            # 거래일 기준으로 정렬 (필요시)
-            group['transactions'].sort(key=lambda x: x['trs_date'])
-            for txn in group['transactions']:
-
-                amount = txn.get('amount', 0)
-                if txn.get('trs_type', '').lower() == 'buy':
-                    cashflow = -amount
-                elif txn.get('trs_type', '').lower() == 'sell':
-                    cashflow = amount
-                else:
-                    # 기타 유형에 대해서는 기본적으로 음수 처리하거나 별도 로직 추가 가능
-                    cashflow = -amount
-
-                cashflows.append((txn['trs_date'], cashflow))
-
-            try:
-                # xirr 함수에 cashflows를 전달하여 IRR 계산
-                irr_value = xirr(cashflows)
-            except Exception as e:
-                # IRR 계산이 불가능한 경우 None 처리
-                irr_value = None
-
-            # 그룹 정보에 IRR 값 추가 (예: 소수점 4자리까지 표시)
-            group['irr'] = round(irr_value, 4) if irr_value is not None else None
-
-        # 최종 결과를 그룹별 리스트로 변환
-        result = list(grouped_transactions.values())
-
-        return jsonify({'status': 'success', 'data': result})
-    
+        return jsonify({'status': 'success', 'data': investments})
+    except InvalidId:
+        return jsonify({'status': 'error', 'message': 'Invalid ID format'}), 400
     except Exception as e:
         return jsonify({'status': 'error', 'message': str(e)}), 500
 
