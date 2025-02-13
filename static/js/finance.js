@@ -1,5 +1,6 @@
 
 function makeCashFlow(trsDate, amount, transactions) {
+    //transactions is array with this format [{date:'', amount:'', ....}]
 
     const initialInvestment = {
         date: trsDate,
@@ -19,18 +20,16 @@ function makeCashFlow(trsDate, amount, transactions) {
 }
 
 function xirr(data) {
-    // 데이터를 날짜와 금액으로 정리
+    // this data is is array with this format [{date:'', amount:'', ....}]
+
     const dates = data.map(d => new Date(d.date));
     const amounts = data.map(d => d.amount);
 
-    // 시작 날짜와 끝 날짜
     const startDate = dates[0];
     const endDate = dates[dates.length - 1];
 
-    // 날짜를 일수로 변환
     const daysBetween = (start, end) => (end - start) / (1000 * 60 * 60 * 24);
 
-    // IRR을 찾는 함수 (Newton-Raphson 방법)
     const npv = (rate) => {
         let result = 0;
         for (let i = 0; i < data.length; i++) {
@@ -40,7 +39,6 @@ function xirr(data) {
         return result;
     };
 
-    // XIRR을 찾기 위한 반복적 방법
     let guess = 0.1; // 초기 추정값
     let tolerance = 1e-6; // 오차 범위
     let iteration = 0;
@@ -61,5 +59,5 @@ function xirr(data) {
     iteration++;
     }
 
-    return NaN; // 결과를 찾을 수 없을 때
+    return NaN;
 }

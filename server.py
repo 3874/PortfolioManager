@@ -615,6 +615,7 @@ def update_fund(fund_id):
                 'totalComAmt': data.get('totalComAmt', ''),
                 'GP_commit': data.get('GP_commit', ''),
                 'mgt_fee': data.get('mgt_fee', ''),
+                'expIRR': data.get('expIRR', ''),
                 'IRR': data.get('IRR', ''),
                 'carry': data.get('carry', ''),
                 'drawdown': data.get('drawdown', ''),
