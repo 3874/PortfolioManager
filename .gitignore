@@ -9,6 +9,7 @@ ehthumbs.db
 *.log
 *.exe
 
-setting/*.json
+setting/
 pages/
 documentation/
+myenv/
