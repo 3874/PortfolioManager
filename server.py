@@ -8,7 +8,6 @@ import bcrypt, json
 from jinja2.exceptions import TemplateNotFound
 from functools import wraps
 from bson import ObjectId
-import numpy as np
 
 with open('setting/config.json', 'r') as config_file:
     config = json.load(config_file)
