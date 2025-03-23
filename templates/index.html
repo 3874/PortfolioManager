@@ -253,7 +253,7 @@
         const FFsession = getSessionFromMemory();
         let resp = await getUser(FFsession['user_id'], FFsession['session_token']);
         if (resp && resp.status == 'success') {
-          ProfileModal();  // basic.js의 함수를 호출하여 모달 생성
+          ProfileModal(); 
           profileDataMapping(resp.data);
         } else {
           alert('No profile');

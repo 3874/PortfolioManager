@@ -429,6 +429,9 @@
             $.ajax({
               url: `/deleteInvestment/${transactionId}`, // 서버의 삭제 엔드포인트
               type: 'DELETE',
+              headers: {
+                      'Authorization': 'Bearer ' + FFsession['session_token']
+                    },
               success: function(response) {
                 if (response.status === 'success') {
                   alert('Transaction deleted successfully!');
@@ -640,38 +643,48 @@
           }
           
           if (keyword) {
-            $.get(`${targetURL}?query=${keyword}`, function(response) {
-              if (response.status === 'success' && response.data.length > 0) {
-                console.log(response.data);
-                $('#results').empty();
-                if (searchMode == 'fund') {
-                  response.data.forEach(function(item) {
-                    $('#results').append(`
-                      <div style="padding: 5px; cursor: pointer;" class="result-item" data-currency="${item.currency}" data-id="${item._id}">
-                        ${item.fundName}
-                      </div>
-                    `);
-                  });
-                } else if (searchMode == 'counterparty' || searchMode == 'target') {
-                    response.data.forEach(function(item) {
-                    $('#results').append(`
-                      <div style="padding: 5px; cursor: pointer;" class="result-item" data-id="${item._id}">
-                        ${item.companyName}
-                      </div>
-                    `);
-                  });
-                } else if (searchMode == 'user') {
-                  response.data.forEach(function(item) {
-                    $('#results').append(`
-                      <div style="padding: 5px; cursor: pointer;" class="result-item" data-id="${item._id}">
-                        ${item.name}
-                      </div>
-                    `);
-                  });
+            $.ajax({
+                url: `${targetURL}?query=${keyword}`,
+                method: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + FFsession['session_token']
+                },
+                success: function(response) {
+                    if (response.status === 'success' && response.data.length > 0) {
+                        console.log(response.data);
+                        $('#results').empty();
+                        if (searchMode == 'fund') {
+                            response.data.forEach(function(item) {
+                                $('#results').append(`
+                                    <div style="padding: 5px; cursor: pointer;" class="result-item" data-currency="${item.currency}" data-id="${item._id}">
+                                        ${item.fundName}
+                                    </div>
+                                `);
+                            });
+                        } else if (searchMode == 'counterparty' || searchMode == 'target') {
+                            response.data.forEach(function(item) {
+                                $('#results').append(`
+                                    <div style="padding: 5px; cursor: pointer;" class="result-item" data-id="${item._id}">
+                                        ${item.companyName}
+                                    </div>
+                                `);
+                            });
+                        } else if (searchMode == 'user') {
+                            response.data.forEach(function(item) {
+                                $('#results').append(`
+                                    <div style="padding: 5px; cursor: pointer;" class="result-item" data-id="${item._id}">
+                                        ${item.name}
+                                    </div>
+                                `);
+                            });
+                        }
+                    } else {
+                        alert('No results found.');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    alert('An error occurred: ' + error);
                 }
-              } else {
-                alert('No results found.');
-              }
             });
           } else {
             alert('No keyword');
@@ -683,6 +696,9 @@
               url: `/updateInvestment`, // 서버의 업데이트 엔드포인트
               type: 'PUT',
               contentType: 'application/json',
+              headers: {
+                    'Authorization': 'Bearer ' + FFsession['session_token']
+                },
               data: JSON.stringify(updatedData),
               success: function(response) {
                   if (response.status === 'success') {
