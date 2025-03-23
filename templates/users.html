@@ -313,174 +313,204 @@
       </div>
     </div>
 
-    <!-- jQuery 2.1.3 -->
-    <script src="/static/plugins/jQuery/jQuery-2.1.3.min.js"></script>
-    <!-- Bootstrap 3.3.2 JS -->
-    <script src="/static/bootstrap/js/bootstrap.min.js" type="text/javascript"></script>
-    <!-- DATA TABES SCRIPT -->
-    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js" type="text/javascript"></script>
-    <script src="/static/plugins/datatables/dataTables.bootstrap.js" type="text/javascript"></script>
-    <!-- SlimScroll -->
-    <script src="/static/plugins/slimScroll/jquery.slimscroll.min.js" type="text/javascript"></script>
-    <!-- FastClick -->
+    <!-- jQuery first -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    <!-- Then Bootstrap -->
+    <script src="/static/bootstrap/js/bootstrap.min.js"></script>
+    
+    <!-- Load basic.js before your page script -->
+    <script src="/static/js/basic.js"></script>
+    
+    <!-- Then other plugins -->
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+    <script src="/static/plugins/datatables/dataTables.bootstrap.js"></script>
+    <script src="/static/plugins/slimScroll/jquery.slimscroll.min.js"></script>
     <script src='/static/plugins/fastclick/fastclick.min.js'></script>
-    <!-- AdminLTE App -->
-    <script src="/static/dist/js/app.min.js" type="text/javascript"></script>
-    <!-- AdminLTE for demo purposes -->
-    <script src="/static/dist/js/demo.js" type="text/javascript"></script>
-    <script src="/static/js/basic.js" type="text/javascript"></script>
-    <!-- page script -->
+    <script src="/static/dist/js/app.min.js"></script>
+    <script src="/static/dist/js/demo.js"></script>
 
-<script>
-  $(document).ready(function() {
-
-      // DataTable 초기화
-      const table = $('#usersTable').DataTable({
-        ajax: {
-            url: '/getUsers',
-            error: function(xhr, error, code) {
-                window.location.href = '/';
+    <!-- Your page script should be last -->
+    <script>
+        $(document).ready(async function() {
+            // ProfileModal 초기화를 먼저 수행
+            const FFsession = getSessionFromMemory();
+            let resp = await getUser(FFsession['user_id'], FFsession['session_token']);
+            if (resp && resp.status == 'success') {
+                ProfileModal();  // basic.js의 함수 호출
+                profileDataMapping(resp.data);
+                
+                // ProfileModal 이벤트 바인딩을 여기서 다시 수행
+                $('#myProfileBtn').off('click').on('click', function(event) {
+                    event.preventDefault();
+                    $('#ProfileModal').modal('show');
+                });
             }
-        },
-        columns: [
-            { data: 'ID' }, // ID 필드
-            { data: 'name' }, // 이름 필드
-            { data: 'hire_date' }, // 고용 날짜 필드
-            { data: 'position' }, // 직위 필드
-            { data: 'role' }, // 역할 필드
-        ],
-        pageLength: 50
-      });
-
-      $('#usersTable tbody').on('click', 'tr', function() {
-        $('#UserForm')[0].reset();
-        $("#addUserBtn").text("Update User");
-        $('#updateUserBtn').css('display', 'inline-block');
-        $('#saveUserBtn').css('display', 'none'); 
-        $('#deleteUserBtn').css('display', 'inline-block');
-        $('#UserModal').modal('show');
-        const data = table.row(this).data();
-        const userId = data._id;
-
-        $.ajax({
-            url: `/getUser/${userId}`,
-            method: 'GET',
-            success: function(response) {
-              console.log(response);
-              userDataMapping(response.data);
-            },
-            error: function() {
-                alert('Failed to load transaction details');
-            }
-        });
-      });
-
-      $('#closeModalBtn').on('click', function() {
-          $('#UserModal').modal('hide');
-      });
-
-      $('#addBtn').click(function() {
-        $('#UserForm')[0].reset();
-        $("#addUserBtn").text("New Company");
-        $('#updateUserBtn').css('display', 'none');
-        $('#saveUserBtn').css('display', 'inline-block'); 
-        $('#deleteUserBtn').css('display', 'none');
-        $('#UserModal').modal('show');
-      });
-
-      $('#deleteUserBtn').on('click', function() {
-        if (!confirm('Are you sure you want to delete this fund?')) { 
-          return;
-        }
-
-        const userId = $('#userId').val();
-
-        $.ajax({
-            url: `/deleteUser/${userId}`,
-            method: 'DELETE',
-            success: function() {
-                alert('Transaction deleted successfully');
+            
+            const table = $('#usersTable').DataTable({
+                ajax: {
+                    url: '/getUsers',
+                    method: 'GET',
+                    headers: {
+                      'Authorization': 'Bearer ' + FFsession['session_token']
+                    },
+                    error: function(xhr, error, code) {
+                      window.location.href = '/';
+                    }
+                },
+                columns: [
+                    { data: 'ID' }, // ID 필드
+                    { data: 'name' }, // 이름 필드
+                    { data: 'hire_date' }, // 고용 날짜 필드
+                    { data: 'position' }, // 직위 필드
+                    { data: 'role' }, // 역할 필드
+                ],
+                pageLength: 50
+            });
+    
+            $('#UserModal').modal({
+                backdrop: 'static',
+                keyboard: false,
+                show: false
+            });
+    
+            $('#usersTable tbody').on('click', 'tr', function() {
+                $('#UserForm')[0].reset();
+                $("#addUserBtn").text("Update User");
+                $('#updateUserBtn').css('display', 'inline-block');
+                $('#saveUserBtn').css('display', 'none'); 
+                $('#deleteUserBtn').css('display', 'inline-block');
+                
+                $('#UserModal').modal('show');
+                
+                const data = table.row(this).data();
+                const userId = data._id;
+    
+                $.ajax({
+                    url: `/getUser/${userId}`,
+                    method: 'GET',
+                    headers: {
+                      'Authorization': 'Bearer ' + FFsession['session_token']
+                    },
+                    success: function(response) {
+                      console.log(response);
+                      userDataMapping(response.data);
+                    },
+                    error: function() {
+                        alert('Failed to load transaction details');
+                    }
+                });
+            });
+    
+            $('#closeModalBtn').on('click', function() {
                 $('#UserModal').modal('hide');
-                table.ajax.reload();
-            },
-            error: function() {
-                alert('Failed to delete transaction');
-            }
-        });
-      });
-
-      $('#saveUserBtn').click(function() {
-        const userData = {
-          name: $('#name').val(), // 사용자 이름
-          hire_date: $('#hire_date').val(), // 고용 날짜
-          position: $('#position').val(), // 직위
-          role: $('#role').val(), // 역할
-        };
-
-        // AJAX 요청으로 데이터 전송
-        $.ajax({
-            url: '/addUser',
-            type: 'POST',
-            contentType: 'application/json',
-            data: JSON.stringify(userData),
-            success: function(response) {
-                if (response.status === 'success') {
-                    alert('Company added successfully!');
-                    $('#UserModal').modal('hide'); 
-                    table.ajax.reload();
-                } else {
-                    alert('Error adding company: ' + response.message);
+            });
+    
+            $('#addBtn').click(function() {
+                $('#UserForm')[0].reset();
+                $("#addUserBtn").text("New Company");
+                $('#updateUserBtn').css('display', 'none');
+                $('#saveUserBtn').css('display', 'inline-block'); 
+                $('#deleteUserBtn').css('display', 'none');
+                $('#UserModal').modal('show');
+            });
+    
+            $('#deleteUserBtn').on('click', function() {
+                if (!confirm('Are you sure you want to delete this fund?')) { 
+                  return;
                 }
-            },
-            error: function(xhr, status, error) {
-                alert('An error occurred: ' + error);
+    
+                const userId = $('#userId').val();
+    
+                $.ajax({
+                    url: `/deleteUser/${userId}`,
+                    method: 'DELETE',
+                    success: function() {
+                        alert('Transaction deleted successfully');
+                        $('#UserModal').modal('hide');
+                        table.ajax.reload();
+                    },
+                    error: function() {
+                        alert('Failed to delete transaction');
+                    }
+                });
+            });
+    
+            $('#saveUserBtn').click(function() {
+                const userData = {
+                  name: $('#name').val(), // 사용자 이름
+                  hire_date: $('#hire_date').val(), // 고용 날짜
+                  position: $('#position').val(), // 직위
+                  role: $('#role').val(), // 역할
+                };
+    
+                // AJAX 요청으로 데이터 전송
+                $.ajax({
+                    url: '/addUser',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(userData),
+                    success: function(response) {
+                        if (response.status === 'success') {
+                            alert('Company added successfully!');
+                            $('#UserModal').modal('hide'); 
+                            table.ajax.reload();
+                        } else {
+                            alert('Error adding company: ' + response.message);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        alert('An error occurred: ' + error);
+                    }
+                });
+            });
+    
+            $('#updateUserBtn').click(function() {
+                const userId = $('#userId').val();
+                const userData = {
+                  ID: $('#ID').val(), 
+                  name: $('#name').val(), // 사용자 이름
+                  hire_date: $('#hire_date').val(), // 고용 날짜
+                  position: $('#position').val(), // 직위
+                  role: $('#role').val(), // 역할
+                };
+    
+                // AJAX 요청으로 데이터 전송
+                $.ajax({
+                    url: `/updateUser/${userId}`, // 회사 ID를 URL에 포함
+                    type: 'PUT', // PUT 메서드 사용
+                    contentType: 'application/json',
+                    data: JSON.stringify(userData),
+                    headers: {
+                        'Authorization': 'Bearer ' + FFsession['session_token']
+                    },
+                    success: function(response) {
+                        if (response.status === 'success') {
+                            alert('Company updated successfully!');
+                            $('#usersTable').DataTable().ajax.reload();
+                            $('#UserModal').modal('hide'); 
+                        } else {
+                            alert('Error updating company: ' + response.message);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        alert('An error occurred: ' + error);
+                    }
+                });
+            });
+    
+            function userDataMapping(info) {
+                $('#userId').val(info._id); // 사용자 ID
+                $('#ID').val(info.ID); // 사용자 ID
+                $('#name').val(info.name); // 사용자 이름
+                $('#hire_date').val(info.hire_date); // 고용 날짜
+                $('#position').val(info.position); // 직위
+                $('#role').val(info.role); // 역할
+                $('#createdAt').val(info.createdAt); // 생성 날짜
+                $('#updatedAt').val(info.updatedAt); // 업데이트 날짜
             }
         });
-      });
-
-      $('#updateUserBtn').click(function() {
-        const userId = $('#userId').val();
-        const userData = {
-          ID: $('#ID').val(), 
-          name: $('#name').val(), // 사용자 이름
-          hire_date: $('#hire_date').val(), // 고용 날짜
-          position: $('#position').val(), // 직위
-          role: $('#role').val(), // 역할
-        };
-
-        // AJAX 요청으로 데이터 전송
-        $.ajax({
-            url: `/updateUser/${userId}`, // 회사 ID를 URL에 포함
-            type: 'PUT', // PUT 메서드 사용
-            contentType: 'application/json',
-            data: JSON.stringify(userData),
-            success: function(response) {
-                if (response.status === 'success') {
-                    alert('Company updated successfully!');
-                    $('#usersTable').DataTable().ajax.reload();
-                    $('#UserModal').modal('hide'); 
-                } else {
-                    alert('Error updating company: ' + response.message);
-                }
-            },
-            error: function(xhr, status, error) {
-                alert('An error occurred: ' + error);
-            }
-        });
-      });
-
-      function userDataMapping(info) {
-        $('#userId').val(info._id); // 사용자 ID
-        $('#ID').val(info.ID); // 사용자 ID
-        $('#name').val(info.name); // 사용자 이름
-        $('#hire_date').val(info.hire_date); // 고용 날짜
-        $('#position').val(info.position); // 직위
-        $('#role').val(info.role); // 역할
-        $('#createdAt').val(info.createdAt); // 생성 날짜
-        $('#updatedAt').val(info.updatedAt); // 업데이트 날짜
-      }
-  });
-</script>
+    </script>
 
   </body>
 </html>

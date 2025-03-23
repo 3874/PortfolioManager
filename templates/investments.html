@@ -264,34 +264,47 @@
       </footer>
     </div><!-- ./wrapper -->
 
-    <!-- jQuery 2.1.3 -->
-    <script src="/static/plugins/jQuery/jQuery-2.1.3.min.js"></script>
-    <!-- Bootstrap 3.3.2 JS -->
+    <!-- jQuery first -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    <!-- Then Bootstrap -->
     <script src="/static/bootstrap/js/bootstrap.min.js" type="text/javascript"></script>
-    <!-- DATA TABES SCRIPT -->
+    
+    <!-- Then DataTables -->
     <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js" type="text/javascript"></script>
     <script src="/static/plugins/datatables/dataTables.bootstrap.js" type="text/javascript"></script>
-    <!-- SlimScroll -->
+    
+    <!-- Other necessary plugins -->
     <script src="/static/plugins/slimScroll/jquery.slimscroll.min.js" type="text/javascript"></script>
-    <!-- FastClick -->
     <script src='/static/plugins/fastclick/fastclick.min.js'></script>
-    <!-- AdminLTE App -->
     <script src="/static/dist/js/app.min.js" type="text/javascript"></script>
-    <!-- AdminLTE for demo purposes -->
     <script src="/static/dist/js/demo.js" type="text/javascript"></script>
-    <script src="/static/js/basic.js" type="text/javascript"></script>
-    <!-- page script -->
+    
+    <!-- Load basic.js before your page script -->
+    <script src="/static/js/basic.js"></script>
+    
+    <!-- Your page script should be last -->
+    <script>
+      $(document).ready(async function() {  // Added async keyword here
+        const FFsession = getSessionFromMemory();
+        let resp = await getUser(FFsession['user_id'], FFsession['session_token']);
+        if (resp && resp.status == 'success') {
+          ProfileModal();
+          profileDataMapping(resp.data);
+        } else {
+          alert('No profile');
+        }
 
-<script>
-  $(document).ready(function() {
-      // DataTable 초기화
-      const table = $('#transactionsTable').DataTable({
-        ajax: {
-            url: '/getInvestments',
-            error: function(xhr, error, code) {
-                window.location.href = '/';
-            }
-        },
+        const table = $('#transactionsTable').DataTable({
+          ajax: {
+              url: '/getInvestments',
+              headers: {
+                'Authorization': 'Bearer ' + FFsession['session_token']
+              },
+              error: function(xhr, error, code) {
+                  window.location.href = '/';
+              }
+          },
         columns: [
             { data: '_id', visible: false },
             { data: 'target_id', visible: false },
@@ -335,6 +348,9 @@
           $.ajax({
               url: `/getInvestment/${transactionId}`,
               method: 'GET',
+              headers: {
+                      'Authorization': 'Bearer ' + FFsession['session_token']
+                    },
               success: function(response) {
                   // API 응답 데이터를 사용하여 모달에 세부 정보 표시
                   console.log(response);
@@ -358,6 +374,9 @@
         $.ajax({
             url: `/deleteInvestment/${transactionId}`,
             method: 'DELETE',
+            headers: {
+                      'Authorization': 'Bearer ' + FFsession['session_token']
+                    },
             success: function() {
                 alert('Transaction deleted successfully');
                 $('#transactionModal').hide();

@@ -228,89 +228,122 @@
         <strong>Copyright &copy; 2014-2015 Ylem invest.</strong> All rights reserved.
       </footer>
     </div>
+    <!-- jQuery first -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.datatables.net/1.13.5/js/jquery.dataTables.min.js"></script> 
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    
+    <!-- Then Bootstrap (올바른 버전) -->
+    <script src="/static/bootstrap/js/bootstrap.min.js" type="text/javascript"></script>
+    
+    <!-- Load basic.js before other scripts -->
+    <script src="/static/js/basic.js"></script>
+    
+    <!-- Then DataTables -->
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js" type="text/javascript"></script>
     <script src="/static/plugins/datatables/dataTables.bootstrap.js" type="text/javascript"></script>
+    
+    <!-- Other plugins -->
+    <script src="/static/plugins/slimScroll/jquery.slimscroll.min.js" type="text/javascript"></script>
+    <script src='/static/plugins/fastclick/fastclick.min.js'></script>
+    <script src="/static/dist/js/app.min.js" type="text/javascript"></script>
+    <script src="/static/dist/js/demo.js" type="text/javascript"></script>
 
-    <script src="/static/js/basic.js" type="text/javascript"></script>
-    <script type="text/javascript">
-        $(document).ready(function() {
-          let profileId = getUserId();
-          const investTable = $('#investTable').DataTable({
-              ajax: {
-                  url: `/getInvestmentsByUser/${profileId}`, 
-                  method: 'GET',
-                  dataSrc: function (json) {
-                      if (json.status === 'success') {
+    <!-- Your page script should be last -->
+    <script>
+      $(document).ready(async function() {
+        const FFsession = getSessionFromMemory();
+        let resp = await getUser(FFsession['user_id'], FFsession['session_token']);
+        if (resp && resp.status == 'success') {
+          ProfileModal();  // basic.js의 함수를 호출하여 모달 생성
+          profileDataMapping(resp.data);
+        } else {
+          alert('No profile');
+        }
+
+        const investTable = $('#investTable').DataTable({
+            ajax: {
+                url: `/getInvestmentsByUser/${FFsession['user_id']}`, 
+                method: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + FFsession['session_token']
+                },
+                dataSrc: function (json) {
+                    if (json.status === 'success') {
+                      console.log(json.data);
+                      return json.data; 
+                    } else {
+                      console.error('데이터 가져오기 실패:', json.message);
+                      return []; 
+                    }
+                }
+            },
+            columns: [
+                { data: '_id', visible: false  },
+                { data: 'target', title: 'Target' },
+                { data: 'trs_date', title: 'Trs. Date', render: formatDate },
+                { data: 'security_type', title: 'Security' },
+                { data: 'offering', title: 'Offering' },
+                { data: 'currency', title: 'Currency' },
+                { data: 'prevalue', title: 'Pre Value', render: function(data) {
+                    return data.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+                }},
+                { data: 'amount', title: 'Amount', render: function(data) {
+                    return data.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+                }},
+            ]
+        });
+
+        const fundTable = $('#fundTable').DataTable({
+            ajax: {
+                url: `/getFundsByUser/${FFsession['user_id']}`, 
+                method: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + FFsession['session_token']
+                },
+                dataSrc: function (json) {
+                    if (json.status === 'success') {
                         console.log(json.data);
                         return json.data; 
-                      } else {
+                    } else {
                         console.error('데이터 가져오기 실패:', json.message);
                         return []; 
-                      }
-                  }
-              },
-              columns: [
-                  { data: '_id', visible: false  },
-                  { data: 'target', title: 'Target' },
-                  { data: 'trs_date', title: 'Trs. Date', render: formatDate },
-                  { data: 'security_type', title: 'Security' },
-                  { data: 'offering', title: 'Offering' },
-                  { data: 'currency', title: 'Currency' },
-                  { data: 'prevalue', title: 'Pre Value', render: function(data) {
-                      return data.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-                  }},
-                  { data: 'amount', title: 'Amount', render: function(data) {
-                      return data.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-                  }},
-              ]
-          });
-          const fundTable = $('#fundTable').DataTable({
-              ajax: {
-                  url: `/getFundsByUser/${profileId}`, 
-                  method: 'GET',
-                  dataSrc: function (json) {
-                      if (json.status === 'success') {
-                          console.log(json.data);
-                          return json.data; 
-                      } else {
-                          console.error('데이터 가져오기 실패:', json.message);
-                          return []; 
-                      }
-                  }
-              },
-              columns: [
-                  { data: '_id', visible: false  },
-                  { data: 'fundName', title: 'Fund Name' },
-                  { data: 'currency', title: 'Currency' },
-                  { data: 'unit', title: 'Unit' },
-                  { data: 'totalComAmt', title: 'Total Amt', render: function(data) {
-                      return data.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-                  }},
-                  { data: 'establish', title: 'Est.', render: formatDate },
-              ]
-          });
-          function formatDate(dateString) {
-            const date = new Date(dateString);
-            const year = date.getFullYear();
-            const month = String(date.getMonth() + 1).padStart(2, '0');
-            const day = String(date.getDate()).padStart(2, '0');
-            return `${year}/${month}/${day}`;
-          };
-          $('#investTable tbody').on('click', 'tr', function() {
-            const data = investTable.row(this).data(); 
-            const investmentId = data._id;
-            localStorage.setItem("PMinvestmentId", investmentId);
-            window.location.href = "/myportfolio";
-          });
-          $('#fundTable tbody').on('click', 'tr', function() {
-              const data = fundTable.row(this).data(); 
-              const fundId = data._id;
-              localStorage.setItem("PMfundId", fundId);
-              window.location.href = "/myfund";
-          });
+                    }
+                }
+            },
+            columns: [
+                { data: '_id', visible: false  },
+                { data: 'fundName', title: 'Fund Name' },
+                { data: 'currency', title: 'Currency' },
+                { data: 'unit', title: 'Unit' },
+                { data: 'totalComAmt', title: 'Total Amt', render: function(data) {
+                    return data.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+                }},
+                { data: 'establish', title: 'Est.', render: formatDate },
+            ]
         });
+
+        function formatDate(dateString) {
+          const date = new Date(dateString);
+          const year = date.getFullYear();
+          const month = String(date.getMonth() + 1).padStart(2, '0');
+          const day = String(date.getDate()).padStart(2, '0');
+          return `${year}/${month}/${day}`;
+        };
+
+        $('#investTable tbody').on('click', 'tr', function() {
+          const data = investTable.row(this).data(); 
+          const investmentId = data._id;
+          localStorage.setItem("PMinvestmentId", investmentId);
+          window.location.href = "/myportfolio";
+        });
+
+        $('#fundTable tbody').on('click', 'tr', function() {
+            const data = fundTable.row(this).data(); 
+            const fundId = data._id;
+            localStorage.setItem("PMfundId", fundId);
+            window.location.href = "/myfund";
+        });
+    
+      });
     </script>
   </body>
 </html>

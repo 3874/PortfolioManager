@@ -3,16 +3,18 @@ from pymongo import MongoClient
 from bson.objectid import ObjectId
 from bson.errors import InvalidId
 from bson.binary import Binary
-from datetime import datetime
-import bcrypt, json
+from datetime import datetime, timedelta, timezone
+import bcrypt, json, base64, os
 from jinja2.exceptions import TemplateNotFound
 from functools import wraps
 from bson import ObjectId
+from flask_cors import CORS
 
 with open('setting/config.json', 'r') as config_file:
     config = json.load(config_file)
 
 app = Flask(__name__)
+CORS(app) 
 app.secret_key = config['SECRET_KEY']  # Change this in production!
 app.config.update(
     SESSION_COOKIE_HTTPONLY=True,
@@ -21,12 +23,9 @@ app.config.update(
 )
 PM_port = config['PM_PORT']
 
-# MongoDB connection
 client = MongoClient(config['MONGODB_URI'])
 db = client[config['DB_NAME']]
-AccessLevel = [{'role': 'admin', 'score': 0}, {'role': 'manager', 'score': 1}, {'role': 'editor', 'score': 2}, {'role': 'user', 'score': 3}]
 
-# Collections
 auth_access_collection = db['auth_collects']
 securities_collection = db['securities']
 users_collection = db['users']
@@ -35,16 +34,68 @@ companies_collection = db['companies']
 transactions_collection = db['transactions']
 investments_collection = db['investments']
 contributions_collection = db['contributions']
+sessions_collection = db['sessions']
+access_level_collection = db['access_levels']
 
-# Decorators
+def get_access_levels():
+    try:
+        access_levels = list(access_level_collection.find())
+        if not access_levels:
+            # If no access levels found in database, use default values
+            default_levels = [
+                {'role': 'admin', 'score': 0}, 
+                {'role': 'manager', 'score': 1}, 
+                {'role': 'editor', 'score': 2}, 
+                {'role': 'user', 'score': 3}
+            ]
+            # Optionally insert default values into database
+            access_level_collection.insert_many(default_levels)
+            return default_levels
+        return access_levels
+    except Exception as e:
+        print(f"Error retrieving access levels: {str(e)}")
+        # Return default values in case of error
+        return [
+            {'role': 'admin', 'score': 0}, 
+            {'role': 'manager', 'score': 1}, 
+            {'role': 'editor', 'score': 2}, 
+            {'role': 'user', 'score': 3}
+        ]
+
+AccessLevel = get_access_levels()
+
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if 'user_id' not in session:
-            return jsonify({'status': 'error', 'message': 'Unauthorized'}), 401
+        Authsession = request.headers.get('Authorization')
+        
+        if Authsession is None or not Authsession.startswith('Bearer '):
+            return jsonify({'status': 'error', 'message': 'Token missing'}), 401
+        
+        sessionToken = Authsession.split('Bearer ')[1]
+
+        session_data = sessions_collection.find_one({'session_token': sessionToken})
+
+        if not session_data:
+            return jsonify({'status': 'error', 'message': 'Invalid session'}), 401
+        
+        # Optionally verify the session token association (if needed)
+        if session_data['session_token'] != sessionToken:
+            return jsonify({'status': 'error', 'message': 'Token mismatch'}), 401
+        
+        created_at = session_data['created_at']
+        if created_at.tzinfo is None:
+            created_at = created_at.replace(tzinfo=timezone.utc)
+        
+        if datetime.now(timezone.utc) - created_at > timedelta(hours=1):
+            return jsonify({'status': 'error', 'message': 'Session expired'}), 401
+        
+        session['user_id'] = session_data['user_id']
+        
         return f(*args, **kwargs)
+    
     return decorated_function
-# Routes
+
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -69,34 +120,47 @@ def authenticate_user():
 
     if not data or 'ID' not in data or 'password' not in data:
         return jsonify({'status': 'error', 'message': 'Invalid request'}), 400
-
     user = users_collection.find_one({'ID': data['ID']})
     if not user:
         return jsonify({'status': 'error', 'message': 'User not found'}), 404
 
     # Password verification
     stored_password = user['password']
-    if isinstance(stored_password, Binary):
-        hashed_bytes = stored_password.as_bytes()
-    elif isinstance(stored_password, bytes):
+    
+    # 비밀번호가 해시된 형태로 저장되었다고 가정하고, bcrypt로 검증
+    if isinstance(stored_password, bytes):
+        # stored_password가 bytes인 경우
         hashed_bytes = stored_password
-    elif isinstance(stored_password, str):
-        hashed_bytes = stored_password.encode('utf-8')
     else:
-        return jsonify({'status': 'error', 'message': 'Invalid password format'}), 500
+        # stored_password가 str인 경우
+        hashed_bytes = stored_password.encode('utf-8')
 
     if bcrypt.checkpw(data['password'].encode('utf-8'), hashed_bytes):
         # Check if user role is empty
         if not user.get('role'):
             return jsonify({'status': 'pending', 'message': 'User role is not assigned. contact to Admin.'}), 403
-        
-        session['user_id'] = str(user['_id'])
-        return jsonify({'status': 'success', 'message': 'Login successful', 'userId': str(user['_id'])})
-    
+        def generate_session_token():
+            return base64.urlsafe_b64encode(os.urandom(32)).decode('utf-8')
+        # session['user_id'] = str(user['_id'])
+        session_data = {
+            'user_id': str(user['_id']),
+            'session_token': generate_session_token(),  
+            'created_at': datetime.now(timezone.utc)
+        }
+        results = sessions_collection.update_one(
+            {'_id': ObjectId(session_data['user_id'])},
+            {'$set': session_data},
+            upsert=True 
+        )
+        if results.modified_count > 0 or results.upserted_id is not None:
+            return jsonify({'status': 'success', 'message': 'Login successful', 'session': session_data})
+        else:
+            return jsonify({'status': 'error', 'message': 'Failed to save session data'}), 500
+
     return jsonify({'status': 'error', 'message': 'Invalid password'}), 401
 
+
 @app.route('/signout', methods=['POST'])
-@login_required
 def logout():
     session.pop('user_id', None)
     return jsonify({'status': 'success', 'message': 'Logged out'})
@@ -108,10 +172,8 @@ def get_users():
         return jsonify({'status': 'error', 'data': 'no authority'}), 403
     
     try:
-        # 사용자 정보를 가져오기 위한 쿼리
         users = list(users_collection.find())
-        
-        # 사용자 정보를 가공하여 반환할 데이터 형식으로 변환
+
         user_data = []
         for user in users:
             user_data.append({
@@ -134,6 +196,7 @@ def get_users():
 def add_user():
     try:
         data = request.json
+
         if not data or 'ID' not in data or 'password' not in data:
             return jsonify({'status': 'error', 'message': 'Missing fields'}), 400
 
@@ -144,9 +207,14 @@ def add_user():
         user = {
             'ID': data['ID'],
             'password': Binary(hashed),
+            'name': '',
+            'hire_date': '',
+            'position': '',
+            'role': 'pending',
             'createdAt': datetime.now(),
             'updatedAt': datetime.now()
         }
+        print(user)
         users_collection.insert_one(user)
         return jsonify({'status': 'success', 'message': 'User added'})
     except Exception as e:
@@ -1017,12 +1085,11 @@ def check_access_level(collection, user_id):
         user_access = next((item for item in AccessLevel if item['role'] == role), None)
         access_level = auth_access_collection.find_one({'collection': collection})
         collection_access = next((item for item in AccessLevel if item['role'] == access_level['access_level']), None)
+
         if user_access and collection_access:
             return user_access['score'] <= collection_access['score']
     
     return False
-
-
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=PM_port)  # 모든 IP에서 접근 가능

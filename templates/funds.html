@@ -364,236 +364,261 @@
       </div>
     </div>
 
-    <!-- jQuery 2.1.3 -->
-    <script src="/static/plugins/jQuery/jQuery-2.1.3.min.js"></script>
-    <!-- Bootstrap 3.3.2 JS -->
+    <!-- jQuery first -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    <!-- Then Bootstrap -->
     <script src="/static/bootstrap/js/bootstrap.min.js" type="text/javascript"></script>
-    <!-- DATA TABES SCRIPT -->
+    
+    <!-- Then DataTables -->
     <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js" type="text/javascript"></script>
     <script src="/static/plugins/datatables/dataTables.bootstrap.js" type="text/javascript"></script>
-    <!-- SlimScroll -->
+    
+    <!-- Other necessary plugins -->
     <script src="/static/plugins/slimScroll/jquery.slimscroll.min.js" type="text/javascript"></script>
-    <!-- FastClick -->
     <script src='/static/plugins/fastclick/fastclick.min.js'></script>
-    <!-- AdminLTE App -->
     <script src="/static/dist/js/app.min.js" type="text/javascript"></script>
-    <!-- AdminLTE for demo purposes -->
     <script src="/static/dist/js/demo.js" type="text/javascript"></script>
-    <script src="/static/js/basic.js" type="text/javascript"></script>
-    <!-- page script -->
-
-<script>
-  $(document).ready(function() {
-      // DataTable 초기화
-      const table = $('#fundsTable').DataTable({
-        ajax: {
-            url: '/getFunds',
-            error: function(xhr, error, code) {
-                window.location.href = '/';
-            }
-        },
-        columns: [
-            { data: '_id', visible: false },
-            { data: 'fundName' },
-            { data: 'country'},
-            { data: 'unit' },
-            { data: 'currency' },
-            { data: 'totalComAmt' },
-            { 
-                data: 'IRR',
-                render: function(data) {
-                  if (data == null || data == '') {
-                    data = 0;
-                  }
-                  return data + '%';
-                }
-            },
-        ],
-        pageLength: 50
-      });
-
-      $('#fundsTable tbody').on('click', 'tr', function() {
-        $('#FundForm')[0].reset();
-        $("#addFundBtn").text("Update Fund");
-        $('#updateFundBtn').css('display', 'inline-block');
-        $('#saveFundBtn').css('display', 'none'); 
-        $('#deleteFundBtn').css('display', 'inline-block');
-        $('#FundModal').modal('show');
-        const data = table.row(this).data();
-        const fundId = data._id;
-
-        $.ajax({
-            url: `/getFund/${fundId}`,
-            method: 'GET',
-            success: function(response) {
-              console.log(response);
-              fundDataMapping(response.data);
-            },
-            error: function() {
-                alert('Failed to load transaction details');
-            }
-        });
-      });
-
-      $('#closeModalBtn').on('click', function() {
-          $('#FundModal').modal('hide');
-      });
-
-      $('#addBtn').click(function() {
-        $('#FundForm')[0].reset();
-        $("#addFundBtn").text("New Company");
-        $('#updateFundBtn').css('display', 'none');
-        $('#saveFundBtn').css('display', 'inline-block'); 
-        $('#deleteFundBtn').css('display', 'none');
-        $('#FundModal').modal('show');
-      });
-
-      $('#deleteFundBtn').on('click', function() {
-        if (!confirm('Are you sure you want to delete this fund?')) { 
-          return;
+    
+    <!-- Load basic.js before your page script -->
+    <script src="/static/js/basic.js"></script>
+    
+    <!-- Your page script should be last -->
+    <script>
+      $(document).ready(async function() {  // Added async keyword here
+        const FFsession = getSessionFromMemory();
+        let resp = await getUser(FFsession['user_id'], FFsession['session_token']);
+        if (resp && resp.status == 'success') {
+          ProfileModal();
+          profileDataMapping(resp.data);
+        } else {
+          alert('No profile');
         }
-
-        const fundId = $('#fundId').val();
-        $.ajax({
-            url: `/deleteFund/${fundId}`,
-            method: 'DELETE',
-            success: function() {
+        
+        const table = $('#fundsTable').DataTable({
+          ajax: {
+              url: '/getFunds',
+              headers: {
+                      'Authorization': 'Bearer ' + FFsession['session_token']
+                    },
+              error: function(xhr, error, code) {
+                  window.location.href = '/';
+              }
+          },
+          columns: [
+              { data: '_id', visible: false },
+              { data: 'fundName' },
+              { data: 'country'},
+              { data: 'unit' },
+              { data: 'currency' },
+              { data: 'totalComAmt' },
+              { 
+                  data: 'IRR',
+                  render: function(data) {
+                    if (data == null || data == '') {
+                      data = 0;
+                    }
+                    return data + '%';
+                  }
+              },
+          ],
+          pageLength: 50
+        });
+    
+        $('#fundsTable tbody').on('click', 'tr', function() {
+          $('#FundForm')[0].reset();
+          $("#addFundBtn").text("Update Fund");
+          $('#updateFundBtn').css('display', 'inline-block');
+          $('#saveFundBtn').css('display', 'none'); 
+          $('#deleteFundBtn').css('display', 'inline-block');
+          $('#FundModal').modal('show');
+          const data = table.row(this).data();
+          const fundId = data._id;
+    
+          $.ajax({
+              url: `/getFund/${fundId}`,
+              method: 'GET',
+              headers: {
+                      'Authorization': 'Bearer ' + FFsession['session_token']
+                    },
+              success: function(response) {
+                console.log(response);
+                fundDataMapping(response.data);
+              },
+              error: function() {
+                  alert('Failed to load transaction details');
+              }
+          });
+        });
+    
+        $('#closeModalBtn').on('click', function() {
+            $('#FundModal').modal('hide');
+        });
+    
+        $('#addBtn').click(function() {
+          $('#FundForm')[0].reset();
+          $("#addFundBtn").text("New Company");
+          $('#updateFundBtn').css('display', 'none');
+          $('#saveFundBtn').css('display', 'inline-block'); 
+          $('#deleteFundBtn').css('display', 'none');
+          $('#FundModal').modal('show');
+        });
+    
+        $('#deleteFundBtn').on('click', function() {
+          if (!confirm('Are you sure you want to delete this fund?')) { 
+            return;
+          }
+    
+          const fundId = $('#fundId').val();
+          $.ajax({
+              url: `/deleteFund/${fundId}`,
+              method: 'DELETE',
+              headers: {
+                      'Authorization': 'Bearer ' + FFsession['session_token']
+                    },
+              success: function() {
                 alert('Transaction deleted successfully');
                 $('#FundModal').modal('hide');
                 table.ajax.reload();
-            },
-            error: function() {
+              },
+              error: function() {
                 alert('Failed to delete transaction');
-            }
+              }
+          });
         });
-      });
-
-      $('#leaderInput').on('keypress', function(e) {
-            if (e.which === 13) { // Enter key pressed
-                e.preventDefault(); // Prevent default form submission
-                
-                const inputValue = $(this).val().trim();
-                $(this).val('');
-                if (inputValue) {
-                    $.ajax({
-                        url: `/searchUser?query=${inputValue}`,
-                        method: 'GET',
-                        success: function(response) {
-                            console.log(response);
-                            let info = response.data;
-                            $('#leader').empty().append('<option value="">Select a user</option>');
-
-                            info.forEach(function(user) {
-                                $('#leader').append(`<option value="${user._id}">${user.name}</option>`);
-                            });
-                        },
-                        error: function(error) {
-                            console.error('Error fetching users:', error);
-                        }
-                    });
-                }
-            }
-        });
-
-      $('#saveFundBtn').click(function() {
-        const fundData = {
-          fundName: $('#fundName').val(),
-          country: $('#country').val(),
-          currency: $('#currency').val(),
-          unit: $('#unit').val(),
-          totalComAmt: $('#totalComAmt').val(),
-          GP_commit: $('#GP_commit').val(),
-          mgt_fee: $('#mgt_fee').val(),
-          expIRR: $('#expIRR').val(),
-          carry: $('#carry').val(),
-          drawdown: $('#drawdown').val(),
-          leader: $('#leader').val(),
-          establish: $('#establish').val(),
-          notes: $('#notes').val(),
-        };
-
-        // AJAX 요청으로 데이터 전송
-        $.ajax({
-            url: '/addFund',
-            type: 'POST',
-            contentType: 'application/json',
-            data: JSON.stringify(fundData),
-            success: function(response) {
+    
+        $('#leaderInput').on('keypress', function(e) {
+              if (e.which === 13) { // Enter key pressed
+                  e.preventDefault(); // Prevent default form submission
+                  
+                  const inputValue = $(this).val().trim();
+                  $(this).val('');
+                  if (inputValue) {
+                      $.ajax({
+                          url: `/searchUser?query=${inputValue}`,
+                          method: 'GET',
+                          success: function(response) {
+                              console.log(response);
+                              let info = response.data;
+                              $('#leader').empty().append('<option value="">Select a user</option>');
+    
+                              info.forEach(function(user) {
+                                  $('#leader').append(`<option value="${user._id}">${user.name}</option>`);
+                              });
+                          },
+                          error: function(error) {
+                              console.error('Error fetching users:', error);
+                          }
+                      });
+                  }
+              }
+          });
+    
+        $('#saveFundBtn').click(function() {
+          const fundData = {
+            fundName: $('#fundName').val(),
+            country: $('#country').val(),
+            currency: $('#currency').val(),
+            unit: $('#unit').val(),
+            totalComAmt: $('#totalComAmt').val(),
+            GP_commit: $('#GP_commit').val(),
+            mgt_fee: $('#mgt_fee').val(),
+            expIRR: $('#expIRR').val(),
+            carry: $('#carry').val(),
+            drawdown: $('#drawdown').val(),
+            leader: $('#leader').val(),
+            establish: $('#establish').val(),
+            notes: $('#notes').val(),
+          };
+    
+          // AJAX 요청으로 데이터 전송
+          $.ajax({
+              url: '/addFund',
+              type: 'POST',
+              headers: {
+                      'Authorization': 'Bearer ' + FFsession['session_token']
+                    },
+              contentType: 'application/json',
+              data: JSON.stringify(fundData),
+              success: function(response) {
                 if (response.status === 'success') {
-                    alert('Company added successfully!');
-                    $('#FundModal').modal('hide'); 
-                    table.ajax.reload();
+                  alert('Company added successfully!');
+                  $('#FundModal').modal('hide'); 
+                  table.ajax.reload();
                 } else {
-                    alert('Error adding company: ' + response.message);
+                  alert('Error adding company: ' + response.message);
                 }
-            },
-            error: function(xhr, status, error) {
+              },
+              error: function(xhr, status, error) {
                 alert('An error occurred: ' + error);
-            }
+              }
+          });
         });
-      });
-
-      $('#updateFundBtn').click(function() {
-        const fundId = $('#fundId').val(); 
-        const fundData = {
-          fundName: $('#fundName').val(),
-          country: $('#country').val(),
-          currency: $('#currency').val(),
-          unit: $('#unit').val(),
-          totalComAmt: $('#totalComAmt').val(),
-          GP_commit: $('#GP_commit').val(),
-          mgt_fee: $('#mgt_fee').val(),
-          expIRR: $('#expIRR').val(),
-          IRR: $('#IRR').val(),
-          carry: $('#carry').val(),
-          drawdown: $('#drawdown').val(),
-          leader: $('#leader').val(),
-          establish: $('#establish').val(),
-          notes: $('#notes').val(),
-        };
-
-        // AJAX 요청으로 데이터 전송
-        $.ajax({
-            url: `/updateFund/${fundId}`, // 회사 ID를 URL에 포함
-            type: 'PUT', // PUT 메서드 사용
-            contentType: 'application/json',
-            data: JSON.stringify(fundData),
-            success: function(response) {
+    
+        $('#updateFundBtn').click(function() {
+          const fundId = $('#fundId').val(); 
+          const fundData = {
+            fundName: $('#fundName').val(),
+            country: $('#country').val(),
+            currency: $('#currency').val(),
+            unit: $('#unit').val(),
+            totalComAmt: $('#totalComAmt').val(),
+            GP_commit: $('#GP_commit').val(),
+            mgt_fee: $('#mgt_fee').val(),
+            expIRR: $('#expIRR').val(),
+            IRR: $('#IRR').val(),
+            carry: $('#carry').val(),
+            drawdown: $('#drawdown').val(),
+            leader: $('#leader').val(),
+            establish: $('#establish').val(),
+            notes: $('#notes').val(),
+          };
+    
+          // AJAX 요청으로 데이터 전송
+          $.ajax({
+              url: `/updateFund/${fundId}`, // 회사 ID를 URL에 포함
+              type: 'PUT', // PUT 메서드 사용
+              headers: {
+                      'Authorization': 'Bearer ' + FFsession['session_token']
+                    },
+              contentType: 'application/json',
+              data: JSON.stringify(fundData),
+              success: function(response) {
                 if (response.status === 'success') {
-                    alert('Company updated successfully!');
-                    $('#fundsTable').DataTable().ajax.reload();
-                    $('#FundModal').modal('hide'); 
+                  alert('Company updated successfully!');
+                  $('#fundsTable').DataTable().ajax.reload();
+                  $('#FundModal').modal('hide'); 
                 } else {
-                    alert('Error updating company: ' + response.message);
+                  alert('Error updating company: ' + response.message);
                 }
-            },
-            error: function(xhr, status, error) {
+              },
+              error: function(xhr, status, error) {
                 alert('An error occurred: ' + error);
-            }
+              }
+          });
         });
-      });
-
-      function fundDataMapping(info) {
-        $('#fundId').val(info._id);
-        $('#fundName').val(info.fundName); 
-        $('#country').val(info.country);
-        $('#totalComAmt').val(info.totalComAmt);
-        $('#GP_commit').val(info.GP_commit); 
-        $('#mgt_fee').val(info.mgt_fee);
-        $('#drawdown').val(info.drawdown);
-        $('#currency').val(info.currency); 
-        $('#unit').val(info.unit); 
-        $('#establish').val(info.establish); 
-        $('#leader').val(info.leader); 
-        $('#expIRR').val(info.expIRR);
-        $('#IRR').val(info.IRR);  
-        $('#carry').val(info.carry);
-        $('#notes').val(info.notes);
-        $('#leaderInput').val(info.leaderName);
-        $('#leader').empty().append(new Option(info.leaderName, info.leader));
-      }
-
-
+    
+        function fundDataMapping(info) {
+          $('#fundId').val(info._id);
+          $('#fundName').val(info.fundName); 
+          $('#country').val(info.country);
+          $('#totalComAmt').val(info.totalComAmt);
+          $('#GP_commit').val(info.GP_commit); 
+          $('#mgt_fee').val(info.mgt_fee);
+          $('#drawdown').val(info.drawdown);
+          $('#currency').val(info.currency); 
+          $('#unit').val(info.unit); 
+          $('#establish').val(info.establish); 
+          $('#leader').val(info.leader); 
+          $('#expIRR').val(info.expIRR);
+          $('#IRR').val(info.IRR);  
+          $('#carry').val(info.carry);
+          $('#notes').val(info.notes);
+          $('#leaderInput').val(info.leaderName);
+          $('#leader').empty().append(new Option(info.leaderName, info.leader));
+        }
+    
+    
   });
 </script>
 
