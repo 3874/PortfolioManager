@@ -12,4 +12,4 @@ ehthumbs.db
 setting/
 pages/
 documentation/
-myenv/
+.venv/
